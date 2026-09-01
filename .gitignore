@@ -24,6 +24,7 @@ pnpm-debug.log*
 
 # TypeScript cache
 *.tsbuildinfo
+/next-env.d.ts
 
 # local browser verification artifacts
 /.playwright-cli/

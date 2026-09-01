@@ -1,10 +1,21 @@
-import { scenes } from "@/data/scenes";
+import type { SceneProgressItem } from "../types/workflow";
 
-export function SceneProgress() {
+interface SceneProgressProps {
+  items: readonly SceneProgressItem[];
+}
+
+export function SceneProgress({ items }: SceneProgressProps) {
   return (
     <ol className="scene-progress" aria-label="对话预演的三个幕次">
-      {scenes.map((scene) => (
-        <li key={scene}>{scene}</li>
+      {items.map((item) => (
+        <li
+          key={item.number}
+          data-progress={item.progressStatus}
+          aria-current={item.progressStatus === "current" ? "step" : undefined}
+          aria-disabled={!item.isUnlocked}
+        >
+          {item.label}
+        </li>
       ))}
     </ol>
   );

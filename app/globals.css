@@ -70,8 +70,28 @@ h1 {
   font-size: 0.9rem;
 }
 
+.scene-progress li[data-progress="current"] {
+  color: var(--text);
+  background: rgb(216 162 74 / 12%);
+  font-weight: 700;
+}
+
+.scene-progress li[data-progress="completed"] {
+  color: var(--accent);
+}
+
+.scene-progress li[data-progress="locked"] {
+  opacity: 0.52;
+}
+
 .scene-progress li + li {
   border-left: 1px solid var(--border);
+}
+
+.status-placeholder {
+  margin: 28px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 @media (max-width: 560px) {
