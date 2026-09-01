@@ -5,6 +5,7 @@ import { diagnoseWithMockCoach } from "../lib/mock-coach";
 import { getScenario, MAX_SCENARIO_LENGTH } from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
 import { ConversationScript } from "./conversation-script";
+import { DevOfflineBadge } from "./dev-offline-badge";
 
 interface ClarifyingStageProps {
   state: AppState;
@@ -55,10 +56,10 @@ export function ClarifyingStage({
       {targetSummary ? (
         <p className="target-summary">{targetSummary}</p>
       ) : null}
-      <p className="mock-coach-note" role="note">
-        <strong>Mock Coach</strong>
-        离线追问第 {state.clarificationCount} / 2 轮
-      </p>
+      <div className="clarification-meta">
+        <span>追问第 {state.clarificationCount} / 2 轮</span>
+        <DevOfflineBadge />
+      </div>
 
       <ConversationScript
         scenario={getScenario(state)}

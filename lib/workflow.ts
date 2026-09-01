@@ -30,6 +30,7 @@ export const INITIAL_APP_STATE: Readonly<AppState> = {
     clarificationTurns: [],
     pendingClarificationQuestion: null,
   },
+  result: null,
 };
 
 const STATUS_TO_SCENE: Record<AppStatus, SceneNumber> = {
@@ -51,6 +52,7 @@ function startGenerating(state: AppState): AppState {
     ...state,
     status: "generating",
     clarificationCount: clarificationTurns.length,
+    result: null,
     conversation: {
       ...state.conversation,
       clarificationTurns,
@@ -175,6 +177,7 @@ export function workflowReducer(
         ...state,
         status: "generating",
         clarificationCount: clarificationTurns.length,
+        result: null,
         conversation: {
           ...state.conversation,
           clarificationTurns,
@@ -190,17 +193,33 @@ export function workflowReducer(
         : state;
 
     case "GENERATION_SUCCEEDED":
-      return state.status === "generating"
-        ? { ...state, status: "results" }
+      return state.status === "generating" &&
+        action.result?.status === "complete"
+        ? { ...state, status: "results", result: action.result }
         : state;
 
     case "GENERATION_FAILED":
       return state.status === "generating"
-        ? { ...state, status: "fallback" }
+        ? { ...state, status: "fallback", result: null }
         : state;
 
     case "RETRY_GENERATION":
       return state.status === "fallback" ? startGenerating(state) : state;
+
+    case "REHEARSE_ANOTHER":
+      return state.status === "results"
+        ? {
+            ...state,
+            status: "describe",
+            clarificationCount: 0,
+            conversation: {
+              scenario: "",
+              clarificationTurns: [],
+              pendingClarificationQuestion: null,
+            },
+            result: null,
+          }
+        : state;
 
     case "RESET":
       return state.status === "results"
@@ -211,6 +230,7 @@ export function workflowReducer(
               ...INITIAL_APP_STATE.conversation,
               clarificationTurns: [],
             },
+            result: null,
           }
         : state;
   }

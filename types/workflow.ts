@@ -1,3 +1,5 @@
+import type { CompleteCoachResult } from "./coach-result";
+
 export type AppStatus =
   | "setup"
   | "describe"
@@ -40,6 +42,7 @@ export interface AppState {
   clarificationCount: number;
   target: ConversationTarget;
   conversation: ConversationState;
+  result: CompleteCoachResult | null;
 }
 
 export type WorkflowAction =
@@ -56,9 +59,10 @@ export type WorkflowAction =
       nextQuestion: string | null;
     }
   | { type: "START_GENERATING" }
-  | { type: "GENERATION_SUCCEEDED" }
+  | { type: "GENERATION_SUCCEEDED"; result: CompleteCoachResult }
   | { type: "GENERATION_FAILED" }
   | { type: "RETRY_GENERATION" }
+  | { type: "REHEARSE_ANOTHER" }
   | { type: "RESET" };
 
 export type SceneNumber = 1 | 2 | 3;

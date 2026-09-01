@@ -13,6 +13,7 @@ import type { AppState, WorkflowAction } from "../types/workflow";
 import { ClarifyingStage } from "./clarifying-stage";
 import { DescribeStage } from "./describe-stage";
 import { GeneratingStage } from "./generating-stage";
+import { ResultsStage } from "./results-stage";
 import { SceneProgress } from "./scene-progress";
 import { SetupStage } from "./setup-stage";
 
@@ -40,9 +41,24 @@ function renderStage(state: AppState, dispatch: Dispatch<WorkflowAction>) {
         />
       );
     case "generating":
-      return <GeneratingStage state={state} targetSummary={targetSummary} />;
+      return (
+        <GeneratingStage
+          state={state}
+          dispatch={dispatch}
+          targetSummary={targetSummary}
+        />
+      );
     case "results":
-      return <p className="workflow-placeholder">第三幕·排演</p>;
+      return state.result ? (
+        <ResultsStage
+          state={state}
+          result={state.result}
+          dispatch={dispatch}
+          targetSummary={targetSummary}
+        />
+      ) : (
+        <p className="workflow-placeholder">排演结果暂时不可用。</p>
+      );
     case "fallback":
       return <p className="workflow-placeholder">剧场暂时断线了</p>;
   }

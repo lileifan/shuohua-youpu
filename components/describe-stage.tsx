@@ -8,6 +8,7 @@ import {
   MAX_SCENARIO_LENGTH,
 } from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
+import { DevOfflineBadge } from "./dev-offline-badge";
 
 interface DescribeStageProps {
   state: AppState;
@@ -56,10 +57,7 @@ export function DescribeStage({
       {targetSummary ? (
         <p className="target-summary">{targetSummary}</p>
       ) : null}
-      <p className="mock-coach-note" role="note">
-        <strong>Mock Coach</strong>
-        离线流程演示，当前未连接真实 AI。
-      </p>
+      <DevOfflineBadge />
 
       <form className="scenario-form" onSubmit={handleSubmit}>
         <label htmlFor="scenario">你的沟通困境</label>
