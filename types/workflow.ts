@@ -6,12 +6,35 @@ export type AppStatus =
   | "results"
   | "fallback";
 
+export type RoleType = "leader" | "client";
+
+export type GenderPresentation = "male" | "female";
+
+export type PersonalityPreset =
+  | "strong"
+  | "rigorous"
+  | "casual"
+  | "easygoing"
+  | "suspicious";
+
+export interface ConversationTarget {
+  role: RoleType | null;
+  gender: GenderPresentation | null;
+  personalityPreset: PersonalityPreset | null;
+  customPersonality: string;
+}
+
 export interface AppState {
   status: AppStatus;
   clarificationCount: number;
+  target: ConversationTarget;
 }
 
 export type WorkflowAction =
+  | { type: "SET_ROLE"; role: RoleType }
+  | { type: "SET_GENDER"; gender: GenderPresentation }
+  | { type: "SET_PERSONALITY_PRESET"; preset: PersonalityPreset }
+  | { type: "SET_CUSTOM_PERSONALITY"; value: string }
   | { type: "COMPLETE_SETUP" }
   | { type: "REQUEST_CLARIFICATION" }
   | { type: "START_GENERATING" }

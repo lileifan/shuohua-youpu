@@ -1,10 +1,16 @@
 :root {
   --background: #24141b;
   --surface: #352029;
+  --surface-deep: #2b1820;
   --border: #795d45;
   --text: #f4eee0;
   --muted: #c8bda9;
   --accent: #d8a24a;
+  --paper: #f4eee0;
+  --paper-soft: #ebe1ce;
+  --ink: #2b2320;
+  --ink-muted: #706456;
+  --wine: #8e3d33;
 }
 
 * {
@@ -26,25 +32,35 @@ body {
   font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-.home-shell {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 32px 20px;
+button,
+input {
+  font: inherit;
 }
 
-.hero {
-  width: min(760px, 100%);
-  padding: clamp(36px, 7vw, 68px) clamp(24px, 6vw, 56px);
-  text-align: center;
+.home-shell {
+  min-height: 100vh;
+  padding: 36px 20px 64px;
+}
+
+.app-frame {
+  width: min(940px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
+  box-shadow: 0 22px 60px rgb(0 0 0 / 24%);
+}
+
+.brand-header {
+  padding: 34px 24px 30px;
+  text-align: center;
+  background: var(--surface-deep);
 }
 
 h1 {
   margin: 0;
   font-family: "Songti SC", SimSun, serif;
-  font-size: clamp(2.5rem, 8vw, 4.75rem);
+  font-size: clamp(2.4rem, 7vw, 4.25rem);
   line-height: 1.1;
   letter-spacing: 0.08em;
 }
@@ -58,9 +74,10 @@ h1 {
 .scene-progress {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 44px 0 0;
+  margin: 0;
   padding: 0;
-  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   list-style: none;
 }
 
@@ -72,7 +89,8 @@ h1 {
 
 .scene-progress li[data-progress="current"] {
   color: var(--text);
-  background: rgb(216 162 74 / 12%);
+  background: rgb(216 162 74 / 15%);
+  box-shadow: inset 0 -3px var(--accent);
   font-weight: 700;
 }
 
@@ -88,13 +106,247 @@ h1 {
   border-left: 1px solid var(--border);
 }
 
-.status-placeholder {
-  margin: 28px 0 0;
-  color: var(--muted);
-  font-size: 0.95rem;
+.stage-panel {
+  min-height: 480px;
+  padding: 42px 48px 50px;
+  color: var(--ink);
+  background: var(--paper);
 }
 
-@media (max-width: 560px) {
+.stage-content {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.stage-kicker {
+  margin: 0 0 8px;
+  color: var(--wine);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.stage-content h2 {
+  margin: 0;
+  font-family: "Songti SC", SimSun, serif;
+  font-size: clamp(1.65rem, 4vw, 2.2rem);
+  line-height: 1.3;
+}
+
+.setup-fieldset {
+  min-width: 0;
+  margin: 30px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.setup-fieldset legend {
+  width: 100%;
+  margin-bottom: 12px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.role-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 16px;
+  color: var(--ink);
+  text-align: left;
+  background: var(--paper-soft);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.role-option:hover {
+  border-color: rgb(142 61 51 / 52%);
+  background: #f1e7d4;
+}
+
+.role-option[data-selected="true"] {
+  border-color: var(--wine);
+  box-shadow: inset 0 0 0 1px var(--wine);
+}
+
+.role-option:focus-visible,
+.choice-pill:focus-visible,
+.primary-action:focus-visible,
+.custom-personality input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.role-avatar {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  color: var(--paper);
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  font-family: "Songti SC", SimSun, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.role-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.role-copy strong {
+  font-size: 1rem;
+}
+
+.role-copy small {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+.selection-mark {
+  min-width: 64px;
+  padding: 5px 8px;
+  color: var(--ink-muted);
+  text-align: center;
+  border: 1px solid rgb(43 35 32 / 22%);
+  border-radius: 999px;
+  font-size: 0.72rem;
+}
+
+.role-option[data-selected="true"] .selection-mark {
+  color: var(--wine);
+  border-color: var(--wine);
+  font-weight: 700;
+}
+
+.compact-options,
+.personality-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.choice-pill {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-width: 78px;
+  justify-content: center;
+  padding: 9px 15px;
+  color: var(--ink);
+  background: var(--paper-soft);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.choice-pill:hover {
+  border-color: rgb(142 61 51 / 52%);
+}
+
+.choice-pill[data-selected="true"] {
+  color: #fff8ed;
+  background: var(--wine);
+  border-color: var(--wine);
+  font-weight: 700;
+}
+
+.custom-personality {
+  margin-top: 18px;
+}
+
+.custom-personality label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink-muted);
+  font-size: 0.84rem;
+}
+
+.custom-personality input {
+  width: 100%;
+  padding: 11px 12px;
+  color: var(--ink);
+  background: #fffaf0;
+  border: 1px solid rgb(43 35 32 / 28%);
+  border-radius: 6px;
+}
+
+.effective-personality {
+  min-height: 1.3em;
+  margin: 8px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.effective-personality[data-custom-active="true"] {
+  color: var(--wine);
+  font-weight: 700;
+}
+
+.primary-action {
+  width: 100%;
+  margin-top: 34px;
+  padding: 13px 18px;
+  color: #fff8ed;
+  background: var(--wine);
+  border: 2px solid var(--wine);
+  border-radius: 7px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-action:hover:not(:disabled) {
+  background: #713027;
+  border-color: #713027;
+}
+
+.primary-action:disabled {
+  color: #8b8276;
+  background: #d8d0c2;
+  border-color: #c3b9a9;
+  cursor: not-allowed;
+}
+
+.target-summary {
+  margin: 28px 0 0;
+  padding: 18px 20px;
+  color: var(--ink);
+  background: var(--paper-soft);
+  border-left: 4px solid var(--wine);
+  font-weight: 700;
+}
+
+.workflow-placeholder {
+  margin: 0;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .home-shell {
+    padding: 20px 12px 40px;
+  }
+
+  .stage-panel {
+    padding: 32px 20px 40px;
+  }
+
+  .role-options {
+    grid-template-columns: 1fr;
+  }
+
   .scene-progress {
     grid-template-columns: 1fr;
   }

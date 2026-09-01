@@ -1,4 +1,9 @@
 import { scenes } from "../data/scenes";
+import {
+  GENDER_LABELS,
+  PERSONALITY_LABELS,
+  ROLE_LABELS,
+} from "../data/target-options";
 import type {
   AppState,
   AppStatus,
@@ -8,10 +13,17 @@ import type {
 } from "../types/workflow";
 
 export const MAX_CLARIFICATION_COUNT = 2;
+export const MAX_CUSTOM_PERSONALITY_LENGTH = 20;
 
 export const INITIAL_APP_STATE: Readonly<AppState> = {
   status: "setup",
   clarificationCount: 0,
+  target: {
+    role: "leader",
+    gender: null,
+    personalityPreset: null,
+    customPersonality: "",
+  },
 };
 
 const STATUS_TO_SCENE: Record<AppStatus, SceneNumber> = {
@@ -39,8 +51,42 @@ export function workflowReducer(
   action: WorkflowAction,
 ): AppState {
   switch (action.type) {
+    case "SET_ROLE":
+      return state.status === "setup"
+        ? { ...state, target: { ...state.target, role: action.role } }
+        : state;
+
+    case "SET_GENDER":
+      return state.status === "setup"
+        ? { ...state, target: { ...state.target, gender: action.gender } }
+        : state;
+
+    case "SET_PERSONALITY_PRESET":
+      return state.status === "setup"
+        ? {
+            ...state,
+            target: { ...state.target, personalityPreset: action.preset },
+          }
+        : state;
+
+    case "SET_CUSTOM_PERSONALITY":
+      return state.status === "setup"
+        ? {
+            ...state,
+            target: {
+              ...state.target,
+              customPersonality: action.value.slice(
+                0,
+                MAX_CUSTOM_PERSONALITY_LENGTH,
+              ),
+            },
+          }
+        : state;
+
     case "COMPLETE_SETUP":
-      return state.status === "setup" ? { ...state, status: "describe" } : state;
+      return state.status === "setup" && isSetupComplete(state)
+        ? { ...state, status: "describe" }
+        : state;
 
     case "REQUEST_CLARIFICATION": {
       const canRequestClarification =
@@ -80,8 +126,44 @@ export function workflowReducer(
       return state.status === "fallback" ? startGenerating(state) : state;
 
     case "RESET":
-      return state.status === "results" ? { ...INITIAL_APP_STATE } : state;
+      return state.status === "results"
+        ? {
+            ...INITIAL_APP_STATE,
+            target: { ...INITIAL_APP_STATE.target },
+          }
+        : state;
   }
+}
+
+export function getEffectivePersonality(state: AppState): string | null {
+  const customPersonality = state.target.customPersonality.trim();
+
+  if (customPersonality) {
+    return customPersonality;
+  }
+
+  return state.target.personalityPreset
+    ? PERSONALITY_LABELS[state.target.personalityPreset]
+    : null;
+}
+
+export function isSetupComplete(state: AppState): boolean {
+  return Boolean(
+    state.target.role &&
+      state.target.gender &&
+      getEffectivePersonality(state),
+  );
+}
+
+export function getTargetSummary(state: AppState): string | null {
+  const { role, gender } = state.target;
+  const personality = getEffectivePersonality(state);
+
+  if (!role || !gender || !personality) {
+    return null;
+  }
+
+  return `当前对象：${personality}的${GENDER_LABELS[gender]}${ROLE_LABELS[role]}`;
 }
 
 export function getCurrentScene(status: AppStatus): SceneNumber {
