@@ -1,0 +1,86 @@
+:root {
+  --background: #24141b;
+  --surface: #352029;
+  --border: #795d45;
+  --text: #f4eee0;
+  --muted: #c8bda9;
+  --accent: #d8a24a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--background);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgb(216 162 74 / 12%), transparent 42%),
+    var(--background);
+  font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.home-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+}
+
+.hero {
+  width: min(760px, 100%);
+  padding: clamp(36px, 7vw, 68px) clamp(24px, 6vw, 56px);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+h1 {
+  margin: 0;
+  font-family: "Songti SC", SimSun, serif;
+  font-size: clamp(2.5rem, 8vw, 4.75rem);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+}
+
+.tagline {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+}
+
+.scene-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 44px 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  list-style: none;
+}
+
+.scene-progress li {
+  padding: 14px 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.scene-progress li + li {
+  border-left: 1px solid var(--border);
+}
+
+@media (max-width: 560px) {
+  .scene-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .scene-progress li + li {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+}

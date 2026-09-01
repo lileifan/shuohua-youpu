@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>说话有谱 · 像素角色原型v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --curtain:#2c1720;
+    --curtain-2:#3a1e29;
+    --spotlight:#d8a24a;
+    --paper:#f4eee0;
+    --paper-2:#eae1cc;
+    --ink:#2b2320;
+    --ink-dim:#6b5f52;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--curtain);
+    background-image:radial-gradient(ellipse at 50% -10%, rgba(216,162,74,0.14), transparent 60%);
+    color:var(--paper);
+    font-family:"Noto Sans SC",sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:44px 20px 90px;
+  }
+  .stage{ width:100%; max-width:760px; }
+
+  .playbill{
+    text-align:center; padding:28px 20px 24px;
+    border:1px solid rgba(216,162,74,0.35); background:var(--curtain-2);
+  }
+  .playbill .eyebrow{ font-size:0.78rem; color:var(--spotlight); letter-spacing:0.15em; margin-bottom:8px; }
+  h1{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:2.1rem; margin:0 0 6px; }
+  .tagline{ font-size:0.88rem; color:rgba(244,238,224,0.6); }
+
+  .panel{
+    background:var(--paper); color:var(--ink); padding:28px 26px;
+    border:1px solid rgba(216,162,74,0.35); border-top:none;
+  }
+  .panel + .panel{ border-top:1px dashed rgba(43,35,32,0.15); }
+
+  .step-label{ font-family:"Noto Serif SC",serif; font-weight:700; font-size:1rem; margin-bottom:4px; }
+  .step-sub{ font-size:0.8rem; color:var(--ink-dim); margin-bottom:16px; }
+
+  .gender-toggle{
+    display:inline-flex; border:1px solid rgba(43,35,32,0.25); border-radius:20px;
+    overflow:hidden; margin-bottom:20px;
+  }
+  .gender-toggle div{
+    padding:7px 20px; font-size:0.84rem; cursor:pointer; background:var(--paper-2); transition:all 0.15s;
+  }
+  .gender-toggle div.active{ background:#4c5f8a; color:var(--paper); }
+
+  .role-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+  .role-card{ text-align:center; cursor:pointer; }
+  .avatar-circle{
+    width:100%; aspect-ratio:1; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 6px rgba(43,35,32,0.12);
+    border:2px solid transparent; overflow:hidden; transition:border-color 0.2s, transform 0.15s;
+  }
+  .role-card:hover .avatar-circle{ transform:translateY(-2px); }
+  .role-card.selected .avatar-circle{ border-color:var(--spotlight); }
+  .avatar-circle svg{ width:80%; height:80%; }
+  .role-name{ font-weight:700; font-size:0.8rem; margin-top:8px; }
+  .role-desc{ font-size:0.66rem; color:var(--ink-dim); margin-top:1px; }
+
+  .tags{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .tag{
+    padding:7px 14px; border-radius:16px; border:1px solid rgba(43,35,32,0.25);
+    font-size:0.84rem; cursor:pointer; background:var(--paper-2); transition:all 0.15s;
+  }
+  .tag.selected{ background:#a4432c; border-color:#a4432c; color:var(--paper); }
+  .custom-input{
+    width:100%; padding:10px 12px; border:1px solid rgba(43,35,32,0.25); border-radius:4px;
+    font-family:"Noto Sans SC",sans-serif; font-size:0.86rem; background:var(--paper-2); color:var(--ink);
+  }
+  .custom-input::placeholder{ color:var(--ink-dim); }
+  .input-label{ font-size:0.76rem; color:var(--ink-dim); margin-bottom:6px; }
+
+  .preview-wrap{ display:flex; gap:26px; align-items:center; }
+  .preview-avatar-box{
+    flex-shrink:0; width:150px; height:150px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 10px rgba(43,35,32,0.16); transition:background 0.2s;
+  }
+  .preview-avatar-box svg{ width:80%; height:80%; }
+  .expr-buttons{ display:flex; flex-direction:column; gap:8px; flex:1; }
+  .expr-btn{
+    text-align:left; padding:9px 14px; border-radius:4px; border:1px solid rgba(43,35,32,0.2);
+    background:var(--paper-2); font-size:0.82rem; cursor:pointer; transition:all 0.15s;
+  }
+  .expr-btn.active{ background:var(--curtain-2); color:var(--paper); border-color:var(--curtain-2); }
+  .expr-btn b{ display:block; font-size:0.78rem; margin-bottom:2px; }
+  .expr-btn span{ color:var(--ink-dim); font-size:0.74rem; }
+  .expr-btn.active span{ color:rgba(244,238,224,0.6); }
+
+  .status-line{
+    margin-top:16px; font-size:0.82rem; color:var(--ink-dim);
+    padding-top:14px; border-top:1px dashed rgba(43,35,32,0.15);
+  }
+  .status-line b{ color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="playbill">
+    <div class="eyebrow">角色与表情 · 像素风原型 v2</div>
+    <h1>说话有谱</h1>
+    <div class="tagline">让每句话出口前心里都有谱</div>
+  </div>
+
+  <div class="panel">
+    <div class="step-label">第一步 · 对方是谁</div>
+    <div class="step-sub">先选性别,再选身份关系</div>
+
+    <div class="gender-toggle" id="genderToggle">
+      <div class="active" data-gender="male">男</div>
+      <div data-gender="female">女</div>
+    </div>
+
+    <div class="role-grid" id="roleGrid"></div>
+  </div>
+
+  <div class="panel">
+    <div class="step-label">第二步 · 这个人性格怎么样</div>
+    <div class="step-sub">选一个标签,或者自己描述</div>
+    <div class="tags" id="tagGroup">
+      <div class="tag selected" data-tag="强势">强势</div>
+      <div class="tag" data-tag="严谨">严谨</div>
+      <div class="tag" data-tag="随性">随性</div>
+      <div class="tag" data-tag="佛系">佛系</div>
+      <div class="tag" data-tag="多疑">多疑</div>
+    </div>
+    <div class="input-label">或者,自己描述这个人的性格</div>
+    <input class="custom-input" id="customInput" type="text" placeholder="比如:傲娇、急性子、嘴硬心软……">
+  </div>
+
+  <div class="panel">
+    <div class="step-label">表情映射预览</div>
+    <div class="step-sub">点击下方语气,看角色表情如何变化</div>
+    <div class="preview-wrap">
+      <div class="preview-avatar-box" id="previewBox"></div>
+      <div class="expr-buttons">
+        <div class="expr-btn active" data-expr="angry"><b>强硬拒绝 / 不悦 / 生气</b><span>皱眉、绷脸</span></div>
+        <div class="expr-btn" data-expr="awkward"><b>勉强同意 / 为难 / 纠结</b><span>苦笑、纠结脸</span></div>
+        <div class="expr-btn" data-expr="smile"><b>爽快答应 / 满意 / 认可</b><span>微笑、点头</span></div>
+        <div class="expr-btn" data-expr="doubt"><b>怀疑 / 追问 / 意外</b><span>挑眉、狐疑脸</span></div>
+      </div>
+    </div>
+    <div class="status-line">当前对象:<b id="statusRole">领导</b>(<b id="statusGender">男</b>) · 性格:<b id="statusTag">强势</b></div>
+  </div>
+
+</div>
+
+<script>
+const ROLES = [
+  {key:'leader', name:'领导', desc:'直属上级', skin:'#e8b48c', hair:'#b0aca3', shirt:'#6b7b86', bg:'#a8c9dc', glasses:true, beard:false, tie:null},
+  {key:'peer', name:'平级同事', desc:'同部门同事', skin:'#e8b48c', hair:'#6b4a34', shirt:'#5b7a95', bg:'#bfe0ea', glasses:false, beard:false, tie:null},
+  {key:'junior', name:'下属', desc:'团队成员', skin:'#e8b48c', hair:'#3a2b20', shirt:'#8a9a6b', bg:'#f4e2c4', glasses:false, beard:false, tie:null},
+  {key:'client', name:'甲方/客户', desc:'外部合作方', skin:'#e8b48c', hair:'#241c18', shirt:'#e9e2d3', bg:'#eccfa8', glasses:false, beard:false, tie:'#a4432c'},
+  {key:'cross', name:'跨部门协作方', desc:'其他部门同事', skin:'#e8b48c', hair:'#4a3223', shirt:'#7d8a6a', bg:'#c9dab3', glasses:false, beard:true, tie:null},
+];
+
+const G = 16; // grid size
+
+function buildGrid(cfg, expr, gender){
+  const grid = Array.from({length:G},()=>Array(G).fill(null));
+  const set=(r,c,color)=>{ if(r>=0&&r<G&&c>=0&&c<G) grid[r][c]=color; };
+  const skin=cfg.skin, hair=cfg.hair, shirt=cfg.shirt;
+  const isFemale = gender==='female';
+  const showBeard = cfg.beard && !isFemale;
+
+  // hair top
+  for(let c=5;c<=10;c++) set(0,c,hair);
+  for(let c=4;c<=11;c++) set(1,c,hair);
+
+  // hairline + long side hair (female)
+  for(let r=2;r<=8;r++){
+    set(r,4,hair); set(r,11,hair);
+    for(let c=5;c<=10;c++) set(r,c, cfg.beard && r===8 && showBeard ? hair : skin);
+    if(isFemale){ set(r,3,hair); set(r,12,hair); }
+  }
+  if(isFemale){ set(9,3,hair); set(9,12,hair); }
+
+  // eyes row (row4), pupils
+  set(4,6,'#2b2320'); set(4,9,'#2b2320');
+
+  // neck + shirt
+  for(let c=6;c<=9;c++) set(9,c,skin);
+  for(let c=4;c<=11;c++) set(10,c,shirt);
+  for(let c=2;c<=13;c++) set(11,c,shirt);
+  for(let c=3;c<=12;c++) set(12,c,shirt);
+  for(let c=3;c<=12;c++) set(13,c,shirt);
+
+  if(cfg.tie){
+    set(10,7,cfg.tie); set(10,8,cfg.tie);
+    set(11,7,cfg.tie); set(11,8,cfg.tie);
+    set(12,7,cfg.tie); set(12,8,cfg.tie);
+  }
+  if(cfg.glasses){
+    const gc='#4a4a4a';
+    set(3,4,gc); set(3,11,gc);
+    set(4,4,gc); set(4,11,gc);
+    set(4,7,gc);
+  }
+
+  // ---- eyebrows (row 2-3) ----
+  const browColor = {calm:'#2b2320', angry:'#a4432c', awkward:'#2b2320', smile:'#5f7d5a', doubt:'#4c5f8a'}[expr] || '#2b2320';
+  if(expr==='calm'){
+    set(3,6,browColor); set(3,9,browColor);
+  } else if(expr==='angry'){
+    set(2,5,browColor); set(2,10,browColor);
+    set(3,7,browColor); set(3,8,browColor);
+  } else if(expr==='awkward'){
+    set(3,6,browColor); set(2,10,browColor);
+  } else if(expr==='smile'){
+    set(2,6,browColor); set(2,9,browColor);
+  } else if(expr==='doubt'){
+    set(1,10,browColor); set(0,10,browColor);
+    set(3,6,browColor);
+  }
+
+  // ---- mouth (rows 6-7) ----
+  const mouthColor = browColor;
+  if(expr==='calm'){
+    set(6,6,mouthColor); set(6,7,mouthColor); set(6,8,mouthColor); set(6,9,mouthColor);
+  } else if(expr==='angry'){
+    set(6,7,mouthColor); set(6,8,mouthColor);
+    set(7,6,mouthColor); set(7,9,mouthColor);
+  } else if(expr==='awkward'){
+    set(6,6,mouthColor); set(7,7,mouthColor); set(6,8,mouthColor); set(7,9,mouthColor);
+  } else if(expr==='smile'){
+    set(6,6,mouthColor); set(6,9,mouthColor);
+    set(7,7,mouthColor); set(7,8,mouthColor);
+  } else if(expr==='doubt'){
+    set(6,7,mouthColor); set(6,8,mouthColor);
+  }
+
+  return grid;
+}
+
+function renderAvatarSVG(grid, cell){
+  cell = cell || 8;
+  const size = G*cell;
+  let rects='';
+  for(let r=0;r<G;r++){
+    for(let c=0;c<G;c++){
+      const color=grid[r][c];
+      if(color){
+        rects += `<rect x="${c*cell}" y="${r*cell}" width="${cell}" height="${cell}" fill="${color}"/>`;
+      }
+    }
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">${rects}</svg>`;
+}
+
+let currentRole = ROLES[0];
+let currentExpr = 'angry';
+let currentGender = 'male';
+
+function renderRoleGrid(){
+  const roleGrid = document.getElementById('roleGrid');
+  roleGrid.innerHTML = '';
+  ROLES.forEach(role=>{
+    const card = document.createElement('div');
+    card.className = 'role-card' + (role.key===currentRole.key ? ' selected' : '');
+    card.innerHTML = `
+      <div class="avatar-circle" style="background:${role.bg}">${renderAvatarSVG(buildGrid(role,'calm',currentGender),6)}</div>
+      <div class="role-name">${role.name}</div>
+      <div class="role-desc">${role.desc}</div>
+    `;
+    card.addEventListener('click', ()=>{
+      currentRole = role;
+      document.getElementById('statusRole').textContent = role.name;
+      renderRoleGrid();
+      renderPreview();
+    });
+    roleGrid.appendChild(card);
+  });
+}
+
+function renderPreview(){
+  const box = document.getElementById('previewBox');
+  box.style.background = currentRole.bg;
+  box.innerHTML = renderAvatarSVG(buildGrid(currentRole, currentExpr, currentGender), 9);
+}
+
+document.querySelectorAll('.gender-toggle div').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.gender-toggle div').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentGender = btn.dataset.gender;
+    document.getElementById('statusGender').textContent = currentGender==='male' ? '男' : '女';
+    renderRoleGrid();
+    renderPreview();
+  });
+});
+
+document.querySelectorAll('.tag').forEach(tag=>{
+  tag.addEventListener('click', ()=>{
+    document.querySelectorAll('.tag').forEach(t=>t.classList.remove('selected'));
+    tag.classList.add('selected');
+    document.getElementById('statusTag').textContent = tag.dataset.tag;
+    document.getElementById('customInput').value='';
+  });
+});
+document.getElementById('customInput').addEventListener('input', (e)=>{
+  if(e.target.value.trim()){
+    document.querySelectorAll('.tag').forEach(t=>t.classList.remove('selected'));
+    document.getElementById('statusTag').textContent = e.target.value.trim();
+  }
+});
+
+document.querySelectorAll('.expr-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.expr-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentExpr = btn.dataset.expr;
+    renderPreview();
+  });
+});
+
+renderRoleGrid();
+renderPreview();
+</script>
+</body>
+</html>

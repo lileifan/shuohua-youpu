@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>说话有谱 · 剧本剧场原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --curtain:#2c1720;
+    --curtain-2:#3a1e29;
+    --spotlight:#d8a24a;
+    --paper:#f4eee0;
+    --paper-2:#eae1cc;
+    --ink:#2b2320;
+    --ink-dim:#6b5f52;
+    --soft:#5f7d5a;
+    --sharp:#a4432c;
+    --wavy:#4c5f8a;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--curtain);
+    background-image:
+      radial-gradient(ellipse at 50% -10%, rgba(216,162,74,0.14), transparent 60%);
+    color:var(--paper);
+    font-family:"Noto Sans SC",sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:44px 20px 90px;
+  }
+  .stage{ width:100%; max-width:700px; }
+
+  .playbill{
+    text-align:center;
+    padding:30px 20px 26px;
+    border:1px solid rgba(216,162,74,0.35);
+    border-bottom:none;
+    background:var(--curtain-2);
+  }
+  .playbill .eyebrow{
+    font-size:0.78rem;
+    color:var(--spotlight);
+    letter-spacing:0.15em;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:"Noto Serif SC",serif;
+    font-weight:700;
+    font-size:2.4rem;
+    margin:0 0 8px;
+    color:var(--paper);
+  }
+  .tagline{
+    font-size:0.9rem;
+    color:rgba(244,238,224,0.6);
+  }
+
+  .scene-tab{
+    display:flex;
+    border:1px solid rgba(216,162,74,0.35);
+    border-bottom:none;
+    background:var(--curtain);
+  }
+  .scene-tab div{
+    flex:1;
+    text-align:center;
+    padding:10px 6px;
+    font-size:0.82rem;
+    color:rgba(244,238,224,0.45);
+    border-right:1px solid rgba(216,162,74,0.2);
+  }
+  .scene-tab div:last-child{ border-right:none; }
+  .scene-tab div.active{
+    color:var(--spotlight);
+    background:rgba(216,162,74,0.08);
+  }
+
+  .script-page{
+    background:var(--paper);
+    color:var(--ink);
+    padding:32px 30px 26px;
+    border:1px solid rgba(216,162,74,0.35);
+  }
+  .scene-heading{
+    font-family:"Noto Serif SC",serif;
+    font-weight:700;
+    font-size:1.05rem;
+    margin-bottom:4px;
+  }
+  .scene-sub{
+    font-size:0.8rem;
+    color:var(--ink-dim);
+    margin-bottom:22px;
+    padding-bottom:14px;
+    border-bottom:1px solid rgba(43,35,32,0.15);
+  }
+
+  .line{
+    margin-bottom:16px;
+    font-family:"Courier Prime",monospace;
+    font-size:0.94rem;
+    line-height:1.7;
+  }
+  .who{
+    font-weight:700;
+    letter-spacing:0.04em;
+    margin-right:6px;
+  }
+  .line.coach .who{ color:var(--ink-dim); }
+  .line.user .who{ color:var(--sharp); }
+  .line.user{ padding-left:22px; }
+
+  .divider{
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:0.8rem;
+    margin:26px 0 22px;
+    position:relative;
+  }
+  .divider::before,.divider::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:38%;
+    height:1px;
+    background:rgba(43,35,32,0.15);
+  }
+  .divider::before{ left:0; }
+  .divider::after{ right:0; }
+
+  .act-label{
+    font-family:"Noto Serif SC",serif;
+    font-size:1rem;
+    font-weight:700;
+    margin:6px 0 16px;
+  }
+
+  .script-cards{ display:flex; flex-direction:column; gap:0; }
+  .flip-card{
+    perspective:1200px;
+    height:168px;
+    margin-bottom:16px;
+    cursor:pointer;
+  }
+  .flip-inner{
+    position:relative;
+    width:100%; height:100%;
+    transition:transform 0.55s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flip-card.flipped .flip-inner{ transform:rotateY(180deg); }
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border:1px solid rgba(43,35,32,0.18);
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .front{ background:var(--paper-2); }
+  .back{
+    background:var(--curtain-2);
+    color:var(--paper);
+    transform:rotateY(180deg);
+  }
+  .role-tag{
+    font-family:"Courier Prime",monospace;
+    font-weight:700;
+    font-size:0.78rem;
+    letter-spacing:0.08em;
+    margin-bottom:8px;
+  }
+  .front.soft .role-tag{ color:var(--soft); }
+  .front.sharp .role-tag{ color:var(--sharp); }
+  .front.wavy .role-tag{ color:var(--wavy); }
+  .front-text{
+    font-family:"Courier Prime",monospace;
+    font-size:0.92rem;
+    line-height:1.6;
+  }
+  .flip-hint{
+    margin-top:10px;
+    font-size:0.74rem;
+    color:var(--ink-dim);
+  }
+  .back .role-tag{ color:var(--spotlight); }
+  .back-text{
+    font-family:"Courier Prime",monospace;
+    font-size:0.88rem;
+    line-height:1.65;
+    color:rgba(244,238,224,0.85);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="playbill">
+    <div class="eyebrow">职场沟通 · 小剧场</div>
+    <h1>说话有谱</h1>
+    <div class="tagline">让每句话出口前心里都有谱</div>
+  </div>
+
+  <div class="scene-tab">
+    <div class="active">第一幕 · 起因</div>
+    <div>第二幕 · 台词</div>
+    <div>第三幕 · 预演</div>
+  </div>
+
+  <div class="script-page">
+    <div class="scene-heading">第一幕 · 周末加班</div>
+    <div class="scene-sub">人物:你、直属领导 &nbsp;|&nbsp; 场景:周五下午,领导临时提出周末加班</div>
+
+    <div class="line coach"><span class="who">教练:</span>最近有什么话不知道怎么说的?说给我听听。</div>
+    <div class="line user"><span class="who">你:</span>领导让我周末加班,不太想去,但又怕说了不好。</div>
+    <div class="line coach"><span class="who">教练:</span>这个领导平时严不严?是完全不想去,还是有条件能接受?</div>
+    <div class="line user"><span class="who">你:</span>还行,主要是怕影响年底评价,周末确实有事。</div>
+
+    <div class="divider">◆</div>
+
+    <div class="act-label">第二幕 · 三版台词(点击翻面看预演)</div>
+
+    <div class="script-cards">
+      <div class="flip-card">
+        <div class="flip-inner">
+          <div class="face front soft">
+            <div class="role-tag">委婉版</div>
+            <div class="front-text">"这周末家里正好有点事脱不开身,能不能这次先应急处理,下次有需要我优先上?"</div>
+            <div class="flip-hint">点击卡片 → 看对方可能怎么接</div>
+          </div>
+          <div class="face back">
+            <div class="role-tag">预演 · 领导的反应</div>
+            <div class="back-text">"那这次尽量克服一下吧。"<br><br>提前想好一句兜底的话,别被"再商量商量"。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card">
+        <div class="flip-inner">
+          <div class="face front sharp">
+            <div class="role-tag">直接版</div>
+            <div class="front-text">"这周末我已经有安排了,没法加班,有紧急的事我周一第一时间处理。"</div>
+            <div class="flip-hint">点击卡片 → 看对方可能怎么接</div>
+          </div>
+          <div class="face back">
+            <div class="role-tag">预演 · 领导的反应</div>
+            <div class="back-text">"具体是什么事啊?"<br><br>干脆利落,但可能被追问原因,提前想好一个不用细说的理由。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card">
+        <div class="flip-inner">
+          <div class="face front wavy">
+            <div class="role-tag">迂回版</div>
+            <div class="front-text">"这个事挺急的,是不是可以叫上XX一起分担一下?我这周末确实有点难。"</div>
+            <div class="flip-hint">点击卡片 → 看对方可能怎么接</div>
+          </div>
+          <div class="face back">
+            <div class="role-tag">预演 · 领导的反应</div>
+            <div class="back-text">"行,那我问问XX。"<br><br>把矛盾从"我不去"转移到"怎么解决",領導可能重新分配任务。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.flip-card').forEach(card=>{
+  card.addEventListener('click',()=>card.classList.toggle('flipped'));
+});
+</script>
+</body>
+</html>
