@@ -10,22 +10,37 @@ import {
   workflowReducer,
 } from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
+import { ClarifyingStage } from "./clarifying-stage";
 import { DescribeStage } from "./describe-stage";
+import { GeneratingStage } from "./generating-stage";
 import { SceneProgress } from "./scene-progress";
 import { SetupStage } from "./setup-stage";
 
 function renderStage(state: AppState, dispatch: Dispatch<WorkflowAction>) {
+  const targetSummary = getTargetSummary(state);
+
   switch (state.status) {
     case "setup":
       return <SetupStage state={state} dispatch={dispatch} />;
     case "describe":
-      return <DescribeStage targetSummary={getTargetSummary(state)} />;
-    case "clarifying":
-      return <p className="workflow-placeholder">第二幕·起因</p>;
-    case "generating":
       return (
-        <p className="workflow-placeholder">正在为这场对话排戏……</p>
+        <DescribeStage
+          state={state}
+          dispatch={dispatch}
+          targetSummary={targetSummary}
+        />
       );
+    case "clarifying":
+      return (
+        <ClarifyingStage
+          key={`${state.clarificationCount}:${state.conversation.pendingClarificationQuestion}`}
+          state={state}
+          dispatch={dispatch}
+          targetSummary={targetSummary}
+        />
+      );
+    case "generating":
+      return <GeneratingStage state={state} targetSummary={targetSummary} />;
     case "results":
       return <p className="workflow-placeholder">第三幕·排演</p>;
     case "fallback":

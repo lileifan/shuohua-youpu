@@ -14,6 +14,7 @@ import type {
 
 export const MAX_CLARIFICATION_COUNT = 2;
 export const MAX_CUSTOM_PERSONALITY_LENGTH = 20;
+export const MAX_SCENARIO_LENGTH = 500;
 
 export const INITIAL_APP_STATE: Readonly<AppState> = {
   status: "setup",
@@ -23,6 +24,11 @@ export const INITIAL_APP_STATE: Readonly<AppState> = {
     gender: null,
     personalityPreset: null,
     customPersonality: "",
+  },
+  conversation: {
+    scenario: "",
+    clarificationTurns: [],
+    pendingClarificationQuestion: null,
   },
 };
 
@@ -36,13 +42,20 @@ const STATUS_TO_SCENE: Record<AppStatus, SceneNumber> = {
 };
 
 function startGenerating(state: AppState): AppState {
+  const clarificationTurns = state.conversation.clarificationTurns.slice(
+    0,
+    MAX_CLARIFICATION_COUNT,
+  );
+
   return {
     ...state,
     status: "generating",
-    clarificationCount: Math.min(
-      state.clarificationCount,
-      MAX_CLARIFICATION_COUNT,
-    ),
+    clarificationCount: clarificationTurns.length,
+    conversation: {
+      ...state.conversation,
+      clarificationTurns,
+      pendingClarificationQuestion: null,
+    },
   };
 }
 
@@ -88,27 +101,91 @@ export function workflowReducer(
         ? { ...state, status: "describe" }
         : state;
 
-    case "REQUEST_CLARIFICATION": {
-      const canRequestClarification =
-        state.status === "describe" || state.status === "clarifying";
+    case "SET_SCENARIO":
+      return state.status === "describe"
+        ? {
+            ...state,
+            conversation: {
+              ...state.conversation,
+              scenario: action.value.slice(0, MAX_SCENARIO_LENGTH),
+            },
+          }
+        : state;
 
-      if (!canRequestClarification) {
+    case "REQUEST_CLARIFICATION": {
+      const question = action.question.trim();
+      const canRequestClarification = state.status === "describe";
+
+      if (!canRequestClarification || !hasValidScenario(state) || !question) {
         return state;
       }
 
-      if (state.clarificationCount >= MAX_CLARIFICATION_COUNT) {
+      const completedTurnCount = Math.min(
+        state.conversation.clarificationTurns.length,
+        MAX_CLARIFICATION_COUNT,
+      );
+
+      if (completedTurnCount >= MAX_CLARIFICATION_COUNT) {
         return startGenerating(state);
       }
 
       return {
         ...state,
         status: "clarifying",
-        clarificationCount: state.clarificationCount + 1,
+        clarificationCount: completedTurnCount + 1,
+        conversation: {
+          ...state.conversation,
+          pendingClarificationQuestion: question,
+        },
+      };
+    }
+
+    case "ANSWER_CLARIFICATION": {
+      const question =
+        state.conversation.pendingClarificationQuestion?.trim() ?? "";
+      const answer = action.answer.trim();
+
+      if (state.status !== "clarifying" || !question || !answer) {
+        return state;
+      }
+
+      const clarificationTurns = [
+        ...state.conversation.clarificationTurns,
+        { question, answer },
+      ].slice(0, MAX_CLARIFICATION_COUNT);
+      const nextQuestion = action.nextQuestion?.trim() ?? "";
+      const canClarifyAgain =
+        Boolean(nextQuestion) &&
+        clarificationTurns.length < MAX_CLARIFICATION_COUNT;
+
+      if (canClarifyAgain) {
+        return {
+          ...state,
+          status: "clarifying",
+          clarificationCount: clarificationTurns.length + 1,
+          conversation: {
+            ...state.conversation,
+            clarificationTurns,
+            pendingClarificationQuestion: nextQuestion,
+          },
+        };
+      }
+
+      return {
+        ...state,
+        status: "generating",
+        clarificationCount: clarificationTurns.length,
+        conversation: {
+          ...state.conversation,
+          clarificationTurns,
+          pendingClarificationQuestion: null,
+        },
       };
     }
 
     case "START_GENERATING":
-      return state.status === "describe" || state.status === "clarifying"
+      return (state.status === "describe" && hasValidScenario(state)) ||
+        state.status === "clarifying"
         ? startGenerating(state)
         : state;
 
@@ -130,9 +207,33 @@ export function workflowReducer(
         ? {
             ...INITIAL_APP_STATE,
             target: { ...INITIAL_APP_STATE.target },
+            conversation: {
+              ...INITIAL_APP_STATE.conversation,
+              clarificationTurns: [],
+            },
           }
         : state;
   }
+}
+
+export function getScenario(state: AppState): string {
+  return state.conversation.scenario.trim();
+}
+
+export function hasValidScenario(state: AppState): boolean {
+  return Boolean(getScenario(state));
+}
+
+export function hasConsistentClarificationState(state: AppState): boolean {
+  const pendingQuestionCount = state.conversation.pendingClarificationQuestion
+    ? 1
+    : 0;
+
+  return (
+    state.clarificationCount ===
+      state.conversation.clarificationTurns.length + pendingQuestionCount &&
+    state.clarificationCount <= MAX_CLARIFICATION_COUNT
+  );
 }
 
 export function getEffectivePersonality(state: AppState): string | null {

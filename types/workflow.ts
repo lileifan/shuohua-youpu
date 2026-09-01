@@ -24,10 +24,22 @@ export interface ConversationTarget {
   customPersonality: string;
 }
 
+export interface ClarificationTurn {
+  question: string;
+  answer: string;
+}
+
+export interface ConversationState {
+  scenario: string;
+  clarificationTurns: ClarificationTurn[];
+  pendingClarificationQuestion: string | null;
+}
+
 export interface AppState {
   status: AppStatus;
   clarificationCount: number;
   target: ConversationTarget;
+  conversation: ConversationState;
 }
 
 export type WorkflowAction =
@@ -36,7 +48,13 @@ export type WorkflowAction =
   | { type: "SET_PERSONALITY_PRESET"; preset: PersonalityPreset }
   | { type: "SET_CUSTOM_PERSONALITY"; value: string }
   | { type: "COMPLETE_SETUP" }
-  | { type: "REQUEST_CLARIFICATION" }
+  | { type: "SET_SCENARIO"; value: string }
+  | { type: "REQUEST_CLARIFICATION"; question: string }
+  | {
+      type: "ANSWER_CLARIFICATION";
+      answer: string;
+      nextQuestion: string | null;
+    }
   | { type: "START_GENERATING" }
   | { type: "GENERATION_SUCCEEDED" }
   | { type: "GENERATION_FAILED" }

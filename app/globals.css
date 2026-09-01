@@ -33,8 +33,13 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
+}
+
+textarea {
+  resize: vertical;
 }
 
 .home-shell {
@@ -182,7 +187,9 @@ h1 {
 .role-option:focus-visible,
 .choice-pill:focus-visible,
 .primary-action:focus-visible,
-.custom-personality input:focus-visible {
+.custom-personality input:focus-visible,
+.scenario-form textarea:focus-visible,
+.clarification-form textarea:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
@@ -328,6 +335,147 @@ h1 {
   font-weight: 700;
 }
 
+.mock-coach-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 16px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+.mock-coach-note strong {
+  padding: 4px 8px;
+  color: #fff8ed;
+  background: var(--wine);
+  border-radius: 3px;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scenario-form,
+.clarification-form {
+  margin-top: 30px;
+}
+
+.scenario-form label,
+.clarification-form label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.scenario-form textarea,
+.clarification-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 132px;
+  padding: 15px 16px;
+  color: var(--ink);
+  background: #fffaf0;
+  border: 1px solid rgb(43 35 32 / 32%);
+  border-radius: 6px;
+  line-height: 1.7;
+}
+
+.clarification-form textarea {
+  min-height: 100px;
+}
+
+.character-limit {
+  margin: 7px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+  text-align: right;
+}
+
+.scenario-form .primary-action,
+.clarification-form .primary-action {
+  margin-top: 20px;
+}
+
+.conversation-script {
+  margin-top: 28px;
+  padding: 24px 24px 8px;
+  background: rgb(235 225 206 / 68%);
+  border-top: 1px solid rgb(43 35 32 / 18%);
+  border-bottom: 1px solid rgb(43 35 32 / 18%);
+}
+
+.script-heading {
+  margin: 0 0 20px;
+  color: var(--wine);
+  font-family: "Songti SC", SimSun, serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.script-exchange {
+  display: contents;
+}
+
+.script-line {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 15px;
+  margin: 0 0 18px;
+  padding-left: 14px;
+  border-left: 3px solid var(--wine);
+}
+
+.script-line[data-speaker="coach"] {
+  border-left-color: var(--accent);
+}
+
+.script-speaker,
+.script-copy {
+  margin: 0;
+}
+
+.script-speaker {
+  color: var(--wine);
+  font-weight: 700;
+}
+
+.script-line[data-speaker="coach"] .script-speaker {
+  color: #8a5d18;
+}
+
+.script-copy {
+  color: var(--ink);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.generating-heading {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.generating-heading p {
+  margin: 7px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+}
+
+.generating-mark {
+  display: grid;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  color: var(--paper);
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  font-family: "Songti SC", SimSun, serif;
+  font-weight: 700;
+}
+
 .workflow-placeholder {
   margin: 0;
   color: var(--ink-muted);
@@ -345,6 +493,16 @@ h1 {
 
   .role-options {
     grid-template-columns: 1fr;
+  }
+
+  .conversation-script {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .script-line {
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
   }
 
   .scene-progress {
