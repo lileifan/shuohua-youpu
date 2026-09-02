@@ -5,13 +5,19 @@ import {
   requestCoachFromProvider,
   type AIProviderOptions,
 } from "../lib/ai-provider";
-import { requestCoach, CoachApiError } from "../lib/coach-client";
+import {
+  requestCoach,
+  CoachApiError,
+  COACH_CLIENT_TIMEOUT_MS,
+} from "../lib/coach-client";
 import { buildCoachPrompt } from "../lib/coach-prompt";
 import { createCoachRequestContext } from "../lib/coach-request";
 import { CoachRequestSchema } from "../lib/coach-schema";
 import {
   acceptCoachResponse,
+  AI_PROVIDER_ATTEMPT_TIMEOUT_MS,
   CoachServiceError,
+  COACH_RUNTIME_TIMEOUT_MS,
   getCoachResponse,
 } from "../lib/coach-service";
 import {
@@ -62,6 +68,22 @@ async function assertRejectsWithCode(
 }
 
 async function main(): Promise<void> {
+assert.equal(
+  AI_PROVIDER_ATTEMPT_TIMEOUT_MS,
+  20_000,
+  "单次 provider attempt 必须允许 20 秒",
+);
+assert.equal(
+  COACH_RUNTIME_TIMEOUT_MS <= 45_000,
+  true,
+  "服务端整次请求预算必须在 45 秒以内",
+);
+assert.equal(
+  COACH_CLIENT_TIMEOUT_MS > COACH_RUNTIME_TIMEOUT_MS &&
+    COACH_CLIENT_TIMEOUT_MS <= 45_000,
+  true,
+  "客户端超时应略晚于服务端且不超过 45 秒",
+);
 assert.equal(
   CoachRequestSchema.safeParse(baseRequest).success,
   true,
@@ -151,7 +173,7 @@ const retrySuccess = await getCoachResponse(baseRequest, {
 
     if (retrySuccessAttempts === 1) {
       throw new AIProviderError(
-        "AI_PROVIDER_HTTP_ERROR",
+        "PROVIDER_HTTP_ERROR",
         "temporary 5xx",
         true,
       );
@@ -173,7 +195,7 @@ await assertRejectsWithCode(
         return "not-json";
       },
     }),
-  "INVALID_AI_JSON",
+  "PROVIDER_INVALID_JSON",
 );
 assert.equal(retryFailureAttempts, 2, "重试失败后必须停止在第二次");
 
@@ -184,7 +206,11 @@ const timeoutRetrySuccess = await getCoachResponse(baseRequest, {
     timeoutRetryAttempts += 1;
 
     if (timeoutRetryAttempts === 1) {
-      throw new AIProviderError("AI_TIMEOUT", "temporary timeout", true);
+      throw new AIProviderError(
+        "PROVIDER_TIMEOUT",
+        "temporary timeout",
+        true,
+      );
     }
 
     return SCENE_A_RESULT;
@@ -199,15 +225,42 @@ await assertRejectsWithCode(
       env: { COACH_MODE: "real" },
       provider: async () => "not-json",
     }),
-  "INVALID_AI_JSON",
+  "PROVIDER_INVALID_JSON",
 );
+let schemaFailureAttempts = 0;
 await assertRejectsWithCode(
   () =>
     getCoachResponse(baseRequest, {
       env: { COACH_MODE: "real" },
-      provider: async () => ({ status: "complete", options: [] }),
+      provider: async () => {
+        schemaFailureAttempts += 1;
+        return { status: "complete", options: [] };
+      },
     }),
-  "INVALID_AI_RESPONSE",
+  "PROVIDER_SCHEMA_ERROR",
+);
+assert.equal(schemaFailureAttempts, 2, "schema failure 应只重试一次");
+
+let authenticationFailureAttempts = 0;
+await assertRejectsWithCode(
+  () =>
+    getCoachResponse(baseRequest, {
+      env: { COACH_MODE: "real" },
+      provider: async () => {
+        authenticationFailureAttempts += 1;
+        throw new AIProviderError(
+          "PROVIDER_HTTP_ERROR",
+          "unauthorized",
+          false,
+        );
+      },
+    }),
+  "PROVIDER_HTTP_ERROR",
+);
+assert.equal(
+  authenticationFailureAttempts,
+  1,
+  "4xx/config/auth failure 不得重试",
 );
 
 const atLimitRequest: CoachRequestContext = {
@@ -245,7 +298,8 @@ assert.equal(
 assert.throws(
   () => acceptCoachResponse("not-json", 0),
   (error: unknown) =>
-    error instanceof CoachServiceError && error.code === "INVALID_AI_JSON",
+    error instanceof CoachServiceError &&
+    error.code === "PROVIDER_INVALID_JSON",
   "非法 JSON 应被解析层拒绝",
 );
 
@@ -291,7 +345,62 @@ await assertRejectsWithCode(
       fetchImpl: abortingFetch,
       timeoutMs: 5,
     }),
-  "AI_TIMEOUT",
+  "PROVIDER_TIMEOUT",
+);
+
+const bodyTimeoutFetch: NonNullable<AIProviderOptions["fetchImpl"]> = async (
+  _input,
+  init,
+) =>
+  ({
+    ok: true,
+    status: 200,
+    json: () =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new DOMException("Aborted", "AbortError"));
+        });
+      }),
+  }) as Response;
+await assertRejectsWithCode(
+  () =>
+    requestCoachFromProvider(baseRequest, {
+      ...providerOptions,
+      fetchImpl: bodyTimeoutFetch,
+      timeoutMs: 5,
+    }),
+  "PROVIDER_TIMEOUT",
+);
+
+await assert.rejects(
+  () =>
+    requestCoachFromProvider(baseRequest, {
+      ...providerOptions,
+      fetchImpl: async () => new Response("unauthorized", { status: 401 }),
+    }),
+  (error: unknown) =>
+    error instanceof AIProviderError &&
+    error.code === "PROVIDER_HTTP_ERROR" &&
+    error.retryable === false,
+  "4xx provider 错误不得自动重试",
+);
+
+await assertRejectsWithCode(
+  () =>
+    requestCoachFromProvider(baseRequest, {
+      ...providerOptions,
+      fetchImpl: async () => new Response("not-json", { status: 200 }),
+    }),
+  "PROVIDER_INVALID_JSON",
+);
+
+await assertRejectsWithCode(
+  () =>
+    requestCoachFromProvider(baseRequest, {
+      ...providerOptions,
+      fetchImpl: async () => Response.json({ choices: [] }),
+    }),
+  "PROVIDER_SCHEMA_ERROR",
 );
 
 await assertRejectsWithCode(

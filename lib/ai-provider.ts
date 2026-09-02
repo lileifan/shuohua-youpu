@@ -5,9 +5,10 @@ export const AI_PROVIDER_TIMEOUT_MS = 20_000;
 
 export type AIProviderErrorCode =
   | "AI_CONFIGURATION_ERROR"
-  | "AI_TIMEOUT"
-  | "AI_PROVIDER_HTTP_ERROR"
-  | "AI_PROVIDER_RESPONSE_ERROR"
+  | "PROVIDER_TIMEOUT"
+  | "PROVIDER_HTTP_ERROR"
+  | "PROVIDER_INVALID_JSON"
+  | "PROVIDER_SCHEMA_ERROR"
   | "AI_REQUEST_ABORTED";
 
 export class AIProviderError extends Error {
@@ -82,7 +83,7 @@ function getProviderConfig(env: AIProviderEnvironment) {
 function getAssistantContent(envelope: unknown): unknown {
   if (!envelope || typeof envelope !== "object") {
     throw new AIProviderError(
-      "AI_PROVIDER_RESPONSE_ERROR",
+      "PROVIDER_SCHEMA_ERROR",
       "AI 服务返回了无法识别的响应。",
       true,
     );
@@ -92,7 +93,7 @@ function getAssistantContent(envelope: unknown): unknown {
 
   if (!Array.isArray(choices) || choices.length === 0) {
     throw new AIProviderError(
-      "AI_PROVIDER_RESPONSE_ERROR",
+      "PROVIDER_SCHEMA_ERROR",
       "AI 服务响应缺少 choices。",
       true,
     );
@@ -105,7 +106,7 @@ function getAssistantContent(envelope: unknown): unknown {
 
   if (typeof content !== "string" && typeof content !== "object") {
     throw new AIProviderError(
-      "AI_PROVIDER_RESPONSE_ERROR",
+      "PROVIDER_SCHEMA_ERROR",
       "AI 服务响应缺少有效内容。",
       true,
     );
@@ -156,9 +157,9 @@ export async function requestCoachFromProvider(
 
     if (!response.ok) {
       throw new AIProviderError(
-        "AI_PROVIDER_HTTP_ERROR",
+        "PROVIDER_HTTP_ERROR",
         `AI 服务请求失败（HTTP ${response.status}）。`,
-        response.status >= 500 || response.status === 429,
+        response.status >= 500,
       );
     }
 
@@ -166,9 +167,24 @@ export async function requestCoachFromProvider(
 
     try {
       envelope = await response.json();
-    } catch {
+    } catch (error) {
+      if (didTimeout) {
+        throw new AIProviderError(
+          "PROVIDER_TIMEOUT",
+          "AI 服务请求超时。",
+          true,
+        );
+      }
+
+      if (options.signal?.aborted) {
+        throw new AIProviderError(
+          "AI_REQUEST_ABORTED",
+          "AI 服务请求已取消。",
+        );
+      }
+
       throw new AIProviderError(
-        "AI_PROVIDER_RESPONSE_ERROR",
+        "PROVIDER_INVALID_JSON",
         "AI 服务没有返回有效 JSON 响应。",
         true,
       );
@@ -181,7 +197,11 @@ export async function requestCoachFromProvider(
     }
 
     if (didTimeout) {
-      throw new AIProviderError("AI_TIMEOUT", "AI 服务请求超时。", true);
+      throw new AIProviderError(
+        "PROVIDER_TIMEOUT",
+        "AI 服务请求超时。",
+        true,
+      );
     }
 
     if (options.signal?.aborted) {
@@ -192,7 +212,7 @@ export async function requestCoachFromProvider(
     }
 
     throw new AIProviderError(
-      "AI_PROVIDER_HTTP_ERROR",
+      "PROVIDER_HTTP_ERROR",
       "AI 服务暂时无法连接。",
       true,
     );

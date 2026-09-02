@@ -24,13 +24,14 @@ function mapServiceError(error: unknown): Response {
           { code: error.code, message: "真实 AI 服务尚未完成配置。" },
           503,
         );
-      case "AI_TIMEOUT":
+      case "PROVIDER_TIMEOUT":
         return errorResponse(
           { code: error.code, message: "排演请求超时，请稍后再试。" },
           504,
         );
-      case "AI_PROVIDER_HTTP_ERROR":
-      case "AI_PROVIDER_RESPONSE_ERROR":
+      case "PROVIDER_HTTP_ERROR":
+      case "PROVIDER_INVALID_JSON":
+      case "PROVIDER_SCHEMA_ERROR":
         return errorResponse(
           { code: error.code, message: "AI 服务暂时无法完成排演。" },
           502,
@@ -50,8 +51,8 @@ function mapServiceError(error: unknown): Response {
           { code: error.code, message: "追问已达到上限，无法继续追问。" },
           422,
         );
-      case "INVALID_AI_JSON":
-      case "INVALID_AI_RESPONSE":
+      case "PROVIDER_INVALID_JSON":
+      case "PROVIDER_SCHEMA_ERROR":
         return errorResponse(
           { code: error.code, message: "AI 返回内容无法安全使用。" },
           502,

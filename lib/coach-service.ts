@@ -13,14 +13,14 @@ import type { CoachResponse } from "../types/coach-result";
 
 export type CoachMode = "real" | "preset";
 
-export const COACH_RUNTIME_TIMEOUT_MS = 20_000;
-export const AI_PROVIDER_ATTEMPT_TIMEOUT_MS = 9_000;
+export const COACH_RUNTIME_TIMEOUT_MS = 42_000;
+export const AI_PROVIDER_ATTEMPT_TIMEOUT_MS = 20_000;
 export const MAX_PROVIDER_ATTEMPTS = 2;
 
 export type CoachServiceErrorCode =
   | "COACH_MODE_CONFIGURATION_ERROR"
-  | "INVALID_AI_JSON"
-  | "INVALID_AI_RESPONSE"
+  | "PROVIDER_INVALID_JSON"
+  | "PROVIDER_SCHEMA_ERROR"
   | "CLARIFICATION_LIMIT_REACHED";
 
 export class CoachServiceError extends Error {
@@ -97,7 +97,7 @@ export function parseRawCoachResponse(rawResponse: unknown): unknown {
     return JSON.parse(rawResponse) as unknown;
   } catch {
     throw new CoachServiceError(
-      "INVALID_AI_JSON",
+      "PROVIDER_INVALID_JSON",
       "AI 没有返回有效 JSON。",
     );
   }
@@ -116,7 +116,7 @@ export function acceptCoachResponse(
     const code =
       validation.code === "CLARIFICATION_LIMIT_REACHED"
         ? "CLARIFICATION_LIMIT_REACHED"
-        : "INVALID_AI_RESPONSE";
+        : "PROVIDER_SCHEMA_ERROR";
 
     throw new CoachServiceError(code, validation.message);
   }
@@ -151,8 +151,8 @@ function isRetryableCoachError(error: unknown): boolean {
 
   if (error instanceof CoachServiceError) {
     return (
-      error.code === "INVALID_AI_JSON" ||
-      error.code === "INVALID_AI_RESPONSE" ||
+      error.code === "PROVIDER_INVALID_JSON" ||
+      error.code === "PROVIDER_SCHEMA_ERROR" ||
       error.code === "CLARIFICATION_LIMIT_REACHED"
     );
   }
@@ -226,7 +226,11 @@ export async function getCoachResponse(
     throw lastError;
   } catch (error) {
     if (runtimeTimedOut) {
-      throw new AIProviderError("AI_TIMEOUT", "AI 服务请求超时。", true);
+      throw new AIProviderError(
+        "PROVIDER_TIMEOUT",
+        "AI 服务请求超时。",
+        true,
+      );
     }
 
     throw error;

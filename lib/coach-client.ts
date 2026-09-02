@@ -2,7 +2,7 @@ import { CoachResponseSchema } from "./coach-schema";
 import type { CoachRequestContext } from "../types/coach-request";
 import type { CoachResponse } from "../types/coach-result";
 
-export const COACH_CLIENT_TIMEOUT_MS = 21_000;
+export const COACH_CLIENT_TIMEOUT_MS = 43_000;
 
 export class CoachApiError extends Error {
   constructor(
