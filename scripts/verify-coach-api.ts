@@ -6,6 +6,7 @@ import {
   type AIProviderOptions,
 } from "../lib/ai-provider";
 import { requestCoach, CoachApiError } from "../lib/coach-client";
+import { buildCoachPrompt } from "../lib/coach-prompt";
 import { createCoachRequestContext } from "../lib/coach-request";
 import { CoachRequestSchema } from "../lib/coach-schema";
 import {
@@ -26,6 +27,11 @@ import {
   MAX_COACH_CLARIFICATIONS,
   type CoachRequestContext,
 } from "../types/coach-request";
+import type { AppState } from "../types/workflow";
+import {
+  INITIAL_APP_STATE,
+  workflowReducer,
+} from "../lib/workflow";
 
 const validClarify = {
   status: "clarify",
@@ -137,6 +143,56 @@ const realComplete = await getCoachResponse(baseRequest, {
 });
 assert.equal(realComplete.status, "complete", "合法真实 complete 应接受");
 
+let retrySuccessAttempts = 0;
+const retrySuccess = await getCoachResponse(baseRequest, {
+  env: { COACH_MODE: "real" },
+  provider: async () => {
+    retrySuccessAttempts += 1;
+
+    if (retrySuccessAttempts === 1) {
+      throw new AIProviderError(
+        "AI_PROVIDER_HTTP_ERROR",
+        "temporary 5xx",
+        true,
+      );
+    }
+
+    return SCENE_A_RESULT;
+  },
+});
+assert.equal(retrySuccess.status, "complete", "一次重试后应能成功");
+assert.equal(retrySuccessAttempts, 2, "重试成功路径必须恰好调用两次");
+
+let retryFailureAttempts = 0;
+await assertRejectsWithCode(
+  () =>
+    getCoachResponse(baseRequest, {
+      env: { COACH_MODE: "real" },
+      provider: async () => {
+        retryFailureAttempts += 1;
+        return "not-json";
+      },
+    }),
+  "INVALID_AI_JSON",
+);
+assert.equal(retryFailureAttempts, 2, "重试失败后必须停止在第二次");
+
+let timeoutRetryAttempts = 0;
+const timeoutRetrySuccess = await getCoachResponse(baseRequest, {
+  env: { COACH_MODE: "real" },
+  provider: async () => {
+    timeoutRetryAttempts += 1;
+
+    if (timeoutRetryAttempts === 1) {
+      throw new AIProviderError("AI_TIMEOUT", "temporary timeout", true);
+    }
+
+    return SCENE_A_RESULT;
+  },
+});
+assert.equal(timeoutRetrySuccess.status, "complete");
+assert.equal(timeoutRetryAttempts, 2, "timeout 应允许一次内部重试");
+
 await assertRejectsWithCode(
   () =>
     getCoachResponse(baseRequest, {
@@ -162,13 +218,28 @@ const atLimitRequest: CoachRequestContext = {
   ],
   clarificationCount: 2,
 };
+const forceCompleteFlags: boolean[] = [];
 await assertRejectsWithCode(
   () =>
     getCoachResponse(atLimitRequest, {
       env: { COACH_MODE: "real" },
-      provider: async () => validClarify,
+      provider: async (_request, attempt) => {
+        forceCompleteFlags.push(attempt.forceComplete);
+        return validClarify;
+      },
     }),
   "CLARIFICATION_LIMIT_REACHED",
+);
+assert.deepEqual(
+  forceCompleteFlags,
+  [true, true],
+  "第三轮 clarify 应只重试一次且两次都强制 complete",
+);
+assert.equal(
+  buildCoachPrompt(atLimitRequest, { forceComplete: true })
+    .systemInstruction.includes("禁止返回 clarify"),
+  true,
+  "达到上限时 Prompt 必须明确禁止 clarify",
 );
 
 assert.throws(
@@ -232,12 +303,70 @@ await assertRejectsWithCode(
   "COACH_REQUEST_TIMEOUT",
 );
 
+const externalAbortController = new AbortController();
+const externallyAbortedRequest = requestCoach(baseRequest, {
+  fetchImpl: abortingFetch,
+  timeoutMs: 1_000,
+  signal: externalAbortController.signal,
+});
+externalAbortController.abort();
+await assertRejectsWithCode(
+  () => externallyAbortedRequest,
+  "COACH_REQUEST_ABORTED",
+);
+
 await assertRejectsWithCode(
   () =>
     requestCoach(baseRequest, {
       fetchImpl: async () => Response.json({ status: "complete", options: [] }),
     }),
   "INVALID_API_RESPONSE",
+);
+
+const fallbackState: AppState = {
+  ...INITIAL_APP_STATE,
+  status: "fallback",
+  clarificationCount: 1,
+  target: {
+    role: "leader",
+    gender: "male",
+    personalityPreset: "strong",
+    customPersonality: "",
+  },
+  conversation: {
+    scenario: SCENE_A_SCENARIO,
+    clarificationTurns: [
+      {
+        question: MOCK_SCENE_A_QUESTION,
+        answer: "周末无法到场，但今晚可以交接。",
+      },
+    ],
+    pendingClarificationQuestion: null,
+  },
+  result: null,
+};
+const retriedState = workflowReducer(fallbackState, {
+  type: "RETRY_GENERATION",
+});
+assert.equal(retriedState.status, "generating", "fallback 应可重新尝试");
+assert.equal(
+  retriedState.conversation.scenario,
+  SCENE_A_SCENARIO,
+  "重试必须保留场景上下文",
+);
+const offlineRecoveredState = workflowReducer(fallbackState, {
+  type: "USE_PRESET_RESULT",
+  result: SCENE_A_RESULT,
+});
+assert.equal(
+  offlineRecoveredState.status,
+  "results",
+  "fallback 应可直接使用离线结果",
+);
+assert.equal(
+  offlineRecoveredState.result?.status,
+  "complete",
+  "离线恢复必须写入合法 complete result",
 );
 
   console.log("Coach API assertions passed.");

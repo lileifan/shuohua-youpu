@@ -62,6 +62,7 @@ export type WorkflowAction =
   | { type: "GENERATION_SUCCEEDED"; result: CompleteCoachResult }
   | { type: "GENERATION_FAILED" }
   | { type: "RETRY_GENERATION" }
+  | { type: "USE_PRESET_RESULT"; result: CompleteCoachResult }
   | { type: "REHEARSE_ANOTHER" }
   | { type: "RESET" };
 

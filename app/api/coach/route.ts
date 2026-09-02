@@ -35,6 +35,11 @@ function mapServiceError(error: unknown): Response {
           { code: error.code, message: "AI 服务暂时无法完成排演。" },
           502,
         );
+      case "AI_REQUEST_ABORTED":
+        return errorResponse(
+          { code: error.code, message: "排演请求已取消。" },
+          499,
+        );
     }
   }
 
@@ -87,7 +92,9 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const response = await getCoachResponse(parsedRequest.data);
+    const response = await getCoachResponse(parsedRequest.data, {
+      signal: request.signal,
+    });
     return Response.json(response);
   } catch (error) {
     return mapServiceError(error);

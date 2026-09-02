@@ -207,6 +207,12 @@ export function workflowReducer(
     case "RETRY_GENERATION":
       return state.status === "fallback" ? startGenerating(state) : state;
 
+    case "USE_PRESET_RESULT":
+      return state.status === "fallback" &&
+        action.result?.status === "complete"
+        ? { ...state, status: "results", result: action.result }
+        : state;
+
     case "REHEARSE_ANOTHER":
       return state.status === "results"
         ? {

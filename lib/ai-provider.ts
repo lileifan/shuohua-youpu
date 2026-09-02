@@ -7,12 +7,14 @@ export type AIProviderErrorCode =
   | "AI_CONFIGURATION_ERROR"
   | "AI_TIMEOUT"
   | "AI_PROVIDER_HTTP_ERROR"
-  | "AI_PROVIDER_RESPONSE_ERROR";
+  | "AI_PROVIDER_RESPONSE_ERROR"
+  | "AI_REQUEST_ABORTED";
 
 export class AIProviderError extends Error {
   constructor(
     public readonly code: AIProviderErrorCode,
     message: string,
+    public readonly retryable = false,
   ) {
     super(message);
     this.name = "AIProviderError";
@@ -35,6 +37,8 @@ export interface AIProviderOptions {
   env?: AIProviderEnvironment;
   fetchImpl?: FetchLike;
   timeoutMs?: number;
+  signal?: AbortSignal;
+  forceComplete?: boolean;
 }
 
 function getProviderConfig(env: AIProviderEnvironment) {
@@ -80,6 +84,7 @@ function getAssistantContent(envelope: unknown): unknown {
     throw new AIProviderError(
       "AI_PROVIDER_RESPONSE_ERROR",
       "AI 服务返回了无法识别的响应。",
+      true,
     );
   }
 
@@ -89,6 +94,7 @@ function getAssistantContent(envelope: unknown): unknown {
     throw new AIProviderError(
       "AI_PROVIDER_RESPONSE_ERROR",
       "AI 服务响应缺少 choices。",
+      true,
     );
   }
 
@@ -101,6 +107,7 @@ function getAssistantContent(envelope: unknown): unknown {
     throw new AIProviderError(
       "AI_PROVIDER_RESPONSE_ERROR",
       "AI 服务响应缺少有效内容。",
+      true,
     );
   }
 
@@ -115,8 +122,13 @@ export async function requestCoachFromProvider(
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? AI_PROVIDER_TIMEOUT_MS;
   const { apiKey, endpoint, model } = getProviderConfig(env);
-  const prompt = buildCoachPrompt(request);
+  const prompt = buildCoachPrompt(request, {
+    forceComplete: options.forceComplete,
+  });
   const controller = new AbortController();
+  const requestSignal = options.signal
+    ? AbortSignal.any([controller.signal, options.signal])
+    : controller.signal;
   let didTimeout = false;
   const timeoutId = setTimeout(() => {
     didTimeout = true;
@@ -139,13 +151,14 @@ export async function requestCoachFromProvider(
         response_format: { type: "json_object" },
       }),
       cache: "no-store",
-      signal: controller.signal,
+      signal: requestSignal,
     });
 
     if (!response.ok) {
       throw new AIProviderError(
         "AI_PROVIDER_HTTP_ERROR",
         `AI 服务请求失败（HTTP ${response.status}）。`,
+        response.status >= 500 || response.status === 429,
       );
     }
 
@@ -157,6 +170,7 @@ export async function requestCoachFromProvider(
       throw new AIProviderError(
         "AI_PROVIDER_RESPONSE_ERROR",
         "AI 服务没有返回有效 JSON 响应。",
+        true,
       );
     }
 
@@ -166,13 +180,21 @@ export async function requestCoachFromProvider(
       throw error;
     }
 
-    if (didTimeout || controller.signal.aborted) {
-      throw new AIProviderError("AI_TIMEOUT", "AI 服务请求超时。");
+    if (didTimeout) {
+      throw new AIProviderError("AI_TIMEOUT", "AI 服务请求超时。", true);
+    }
+
+    if (options.signal?.aborted) {
+      throw new AIProviderError(
+        "AI_REQUEST_ABORTED",
+        "AI 服务请求已取消。",
+      );
     }
 
     throw new AIProviderError(
       "AI_PROVIDER_HTTP_ERROR",
       "AI 服务暂时无法连接。",
+      true,
     );
   } finally {
     clearTimeout(timeoutId);

@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import type { Dispatch, FormEvent } from "react";
 
-import { requestCoach } from "../lib/coach-client";
 import { createCoachRequestContext } from "../lib/coach-request";
 import {
   getEffectivePersonality,
@@ -10,23 +9,26 @@ import {
   MAX_SCENARIO_LENGTH,
 } from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
+import type { CoachRequestContext } from "../types/coach-request";
 import { DevOfflineBadge } from "./dev-offline-badge";
 
 interface DescribeStageProps {
   state: AppState;
   dispatch: Dispatch<WorkflowAction>;
   targetSummary: string | null;
+  submitCoachRequest: (request: CoachRequestContext) => void;
 }
 
 export function DescribeStage({
   state,
   dispatch,
   targetSummary,
+  submitCoachRequest,
 }: DescribeStageProps) {
   const submitLock = useRef(false);
   const scenarioIsValid = hasValidScenario(state);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (submitLock.current || !scenarioIsValid) {
@@ -48,21 +50,7 @@ export function DescribeStage({
       return;
     }
 
-    try {
-      const response = await requestCoach(request);
-
-      if (response.status === "clarify") {
-        dispatch({
-          type: "REQUEST_CLARIFICATION",
-          question: response.clarification_question,
-        });
-        return;
-      }
-
-      dispatch({ type: "GENERATION_SUCCEEDED", result: response });
-    } catch {
-      dispatch({ type: "GENERATION_FAILED" });
-    }
+    submitCoachRequest(request);
   }
 
   return (

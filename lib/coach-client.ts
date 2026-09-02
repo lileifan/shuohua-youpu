@@ -2,7 +2,7 @@ import { CoachResponseSchema } from "./coach-schema";
 import type { CoachRequestContext } from "../types/coach-request";
 import type { CoachResponse } from "../types/coach-result";
 
-export const COACH_CLIENT_TIMEOUT_MS = 22_000;
+export const COACH_CLIENT_TIMEOUT_MS = 21_000;
 
 export class CoachApiError extends Error {
   constructor(
@@ -22,6 +22,7 @@ type FetchLike = (
 interface CoachClientOptions {
   fetchImpl?: FetchLike;
   timeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 function readPublicError(body: unknown): { code: string; message: string } {
@@ -51,6 +52,9 @@ export async function requestCoach(
 ): Promise<CoachResponse> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const controller = new AbortController();
+  const requestSignal = options.signal
+    ? AbortSignal.any([controller.signal, options.signal])
+    : controller.signal;
   let didTimeout = false;
   const timeoutId = setTimeout(() => {
     didTimeout = true;
@@ -63,7 +67,7 @@ export async function requestCoach(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
       cache: "no-store",
-      signal: controller.signal,
+      signal: requestSignal,
     });
 
     let body: unknown;
@@ -97,8 +101,12 @@ export async function requestCoach(
       throw error;
     }
 
-    if (didTimeout || controller.signal.aborted) {
+    if (didTimeout) {
       throw new CoachApiError("COACH_REQUEST_TIMEOUT", "排演请求超时。");
+    }
+
+    if (options.signal?.aborted) {
+      throw new CoachApiError("COACH_REQUEST_ABORTED", "排演请求已取消。");
     }
 
     throw new CoachApiError("COACH_NETWORK_ERROR", "排演服务暂时无法连接。");

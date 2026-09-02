@@ -5,6 +5,10 @@ export interface CoachPrompt {
   contextPayload: string;
 }
 
+export interface CoachPromptOptions {
+  forceComplete?: boolean;
+}
+
 const SYSTEM_INSTRUCTION = `你是“说话有谱”的职场沟通教练。你的任务是帮助用户在真实职场关系中看清顾虑、守住底线，并准备可执行的表达方式，而不是训话、评价用户或替用户做决定。
 
 工作规则：
@@ -18,7 +22,10 @@ const SYSTEM_INSTRUCTION = `你是“说话有谱”的职场沟通教练。你�
 clarify: {"status":"clarify","clarification_question":"一个核心问题","context":{"real_concern":"文本或 null","flexibility":"文本或 null"}}
 complete: {"status":"complete","assumptions_notice":"文本或 null","context_summary":"非空文本","options":[{"style":"soft | direct | indirect","label":"非空文本","strategy":"非空文本","script":"非空文本","predicted_reaction":"具体回应","reaction_category":"angry | awkward | smile | doubt","follow_up_tip":"非空文本"}]}`;
 
-export function buildCoachPrompt(request: CoachRequestContext): CoachPrompt {
+export function buildCoachPrompt(
+  request: CoachRequestContext,
+  options: CoachPromptOptions = {},
+): CoachPrompt {
   const contextPayload = {
     target: {
       role: request.target.role,
@@ -38,7 +45,9 @@ export function buildCoachPrompt(request: CoachRequestContext): CoachPrompt {
   };
 
   return {
-    systemInstruction: SYSTEM_INSTRUCTION,
+    systemInstruction: options.forceComplete
+      ? `${SYSTEM_INSTRUCTION}\n\n本次请求已经达到追问上限。禁止返回 clarify；即使信息仍不完整，也必须返回 complete，并通过 assumptions_notice 说明假设。`
+      : SYSTEM_INSTRUCTION,
     contextPayload: JSON.stringify(contextPayload, null, 2),
   };
 }
