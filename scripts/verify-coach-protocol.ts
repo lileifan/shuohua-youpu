@@ -127,5 +127,42 @@ assert.equal(
   true,
   "System instruction 应限制每轮一个问题",
 );
+assert.equal(
+  prompt.systemInstruction.includes(
+    "真实顾虑已经明确，但底线或可接受的折中空间不清楚",
+  ),
+  true,
+  "Prompt 应识别顾虑已明确但底线/弹性未明的情形",
+);
+assert.equal(
+  prompt.systemInstruction.includes("优先追问底线或可接受的折中空间"),
+  true,
+  "Prompt 应优先追问底线或折中空间",
+);
+assert.equal(
+  prompt.systemInstruction.includes("不要优先追问背景原因"),
+  true,
+  "Prompt 应降低不影响策略的原因问题优先级",
+);
+assert.equal(
+  prompt.systemInstruction.includes("分阶段交付、部分验收、调整范围"),
+  true,
+  "Prompt 应给出通用的交付弹性示例",
+);
+assert.equal(
+  prompt.systemInstruction.includes("输出保持简洁"),
+  true,
+  "Prompt 应明确限制输出简洁",
+);
+assert.equal(
+  prompt.systemInstruction.includes("每版话术保持简洁，不要过长"),
+  true,
+  "Prompt 应要求三版话术不要过长",
+);
+assert.equal(
+  prompt.systemInstruction.includes("只输出一个 JSON 对象"),
+  true,
+  "Prompt 应继续要求 JSON-only 输出",
+);
 
 console.log("Coach protocol assertions passed.");
