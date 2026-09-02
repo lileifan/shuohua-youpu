@@ -44,7 +44,6 @@ function renderStage(state: AppState, dispatch: Dispatch<WorkflowAction>) {
       return (
         <GeneratingStage
           state={state}
-          dispatch={dispatch}
           targetSummary={targetSummary}
         />
       );

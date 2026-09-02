@@ -1,37 +1,17 @@
-import { useEffect } from "react";
-import type { Dispatch } from "react";
-
-import {
-  getPresetCoachResult,
-  PRESET_LOADING_DELAY_MS,
-} from "../lib/preset-coach";
 import { getScenario } from "../lib/workflow";
-import type { AppState, WorkflowAction } from "../types/workflow";
+import type { AppState } from "../types/workflow";
 import { ConversationScript } from "./conversation-script";
 import { DevOfflineBadge } from "./dev-offline-badge";
 
 interface GeneratingStageProps {
   state: AppState;
-  dispatch: Dispatch<WorkflowAction>;
   targetSummary: string | null;
 }
 
 export function GeneratingStage({
   state,
-  dispatch,
   targetSummary,
 }: GeneratingStageProps) {
-  useEffect(() => {
-    const timerId = window.setTimeout(() => {
-      dispatch({
-        type: "GENERATION_SUCCEEDED",
-        result: getPresetCoachResult(state),
-      });
-    }, PRESET_LOADING_DELAY_MS);
-
-    return () => window.clearTimeout(timerId);
-  }, [dispatch, state]);
-
   return (
     <section
       className="stage-content"

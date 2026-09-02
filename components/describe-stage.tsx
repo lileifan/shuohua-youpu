@@ -1,8 +1,10 @@
 import { useRef } from "react";
 import type { Dispatch, FormEvent } from "react";
 
-import { diagnoseWithMockCoach } from "../lib/mock-coach";
+import { requestCoach } from "../lib/coach-client";
+import { createCoachRequestContext } from "../lib/coach-request";
 import {
+  getEffectivePersonality,
   getScenario,
   hasValidScenario,
   MAX_SCENARIO_LENGTH,
@@ -24,7 +26,7 @@ export function DescribeStage({
   const submitLock = useRef(false);
   const scenarioIsValid = hasValidScenario(state);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (submitLock.current || !scenarioIsValid) {
@@ -32,20 +34,35 @@ export function DescribeStage({
     }
 
     submitLock.current = true;
-    const decision = diagnoseWithMockCoach({
+    const request = createCoachRequestContext({
+      role: state.target.role,
+      personality: getEffectivePersonality(state),
       scenario: getScenario(state),
       clarificationTurns: state.conversation.clarificationTurns,
+      clarificationCount: state.conversation.clarificationTurns.length,
     });
+    dispatch({ type: "START_GENERATING" });
 
-    if (decision.type === "clarify") {
-      dispatch({
-        type: "REQUEST_CLARIFICATION",
-        question: decision.question,
-      });
+    if (!request) {
+      dispatch({ type: "GENERATION_FAILED" });
       return;
     }
 
-    dispatch({ type: "START_GENERATING" });
+    try {
+      const response = await requestCoach(request);
+
+      if (response.status === "clarify") {
+        dispatch({
+          type: "REQUEST_CLARIFICATION",
+          question: response.clarification_question,
+        });
+        return;
+      }
+
+      dispatch({ type: "GENERATION_SUCCEEDED", result: response });
+    } catch {
+      dispatch({ type: "GENERATION_FAILED" });
+    }
   }
 
   return (

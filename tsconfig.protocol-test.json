@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "noEmit": false
   },
-  "include": ["scripts/verify-coach-protocol.ts"]
+  "include": ["scripts/verify-coach-protocol.ts", "scripts/verify-coach-api.ts"]
 }

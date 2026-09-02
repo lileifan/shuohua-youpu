@@ -6,6 +6,43 @@ import type { CoachResponse } from "../types/coach-result";
 const NonEmptyTextSchema = z.string().trim().min(1, "文本不能为空");
 const OptionalContextTextSchema = NonEmptyTextSchema.nullable();
 
+const ClarificationTurnSchema = z
+  .object({
+    question: NonEmptyTextSchema.max(500),
+    answer: NonEmptyTextSchema.max(500),
+  })
+  .strict();
+
+export const CoachRequestSchema = z
+  .object({
+    target: z
+      .object({
+        role: z.enum(["leader", "client"]),
+        personality: NonEmptyTextSchema.max(20),
+      })
+      .strict(),
+    scenario: NonEmptyTextSchema.max(500),
+    clarificationTurns: z
+      .array(ClarificationTurnSchema)
+      .max(MAX_COACH_CLARIFICATIONS),
+    clarificationCount: z
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_COACH_CLARIFICATIONS),
+    maxClarifications: z.literal(MAX_COACH_CLARIFICATIONS),
+  })
+  .strict()
+  .superRefine((request, context) => {
+    if (request.clarificationCount !== request.clarificationTurns.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["clarificationCount"],
+        message: "追问次数必须与已完成追问记录一致",
+      });
+    }
+  });
+
 export const StrategyStyleSchema = z.enum([
   "soft",
   "direct",

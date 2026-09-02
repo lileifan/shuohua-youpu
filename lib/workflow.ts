@@ -116,7 +116,8 @@ export function workflowReducer(
 
     case "REQUEST_CLARIFICATION": {
       const question = action.question.trim();
-      const canRequestClarification = state.status === "describe";
+      const canRequestClarification =
+        state.status === "describe" || state.status === "generating";
 
       if (!canRequestClarification || !hasValidScenario(state) || !question) {
         return state;

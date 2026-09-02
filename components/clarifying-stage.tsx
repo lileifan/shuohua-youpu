@@ -1,8 +1,13 @@
 import { useRef, useState } from "react";
 import type { Dispatch, FormEvent } from "react";
 
-import { diagnoseWithMockCoach } from "../lib/mock-coach";
-import { getScenario, MAX_SCENARIO_LENGTH } from "../lib/workflow";
+import { requestCoach } from "../lib/coach-client";
+import { createCoachRequestContext } from "../lib/coach-request";
+import {
+  getEffectivePersonality,
+  getScenario,
+  MAX_SCENARIO_LENGTH,
+} from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
 import { ConversationScript } from "./conversation-script";
 import { DevOfflineBadge } from "./dev-offline-badge";
@@ -24,7 +29,7 @@ export function ClarifyingStage({
     state.conversation.pendingClarificationQuestion ?? "";
   const answerIsValid = Boolean(answer.trim());
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (submitLock.current || !answerIsValid || !currentQuestion) {
@@ -37,16 +42,40 @@ export function ClarifyingStage({
       ...state.conversation.clarificationTurns,
       { question: currentQuestion, answer: answerText },
     ];
-    const decision = diagnoseWithMockCoach({
+    const request = createCoachRequestContext({
+      role: state.target.role,
+      personality: getEffectivePersonality(state),
       scenario: getScenario(state),
       clarificationTurns: nextTurns,
+      clarificationCount: nextTurns.length,
     });
 
     dispatch({
       type: "ANSWER_CLARIFICATION",
       answer: answerText,
-      nextQuestion: decision.type === "clarify" ? decision.question : null,
+      nextQuestion: null,
     });
+
+    if (!request) {
+      dispatch({ type: "GENERATION_FAILED" });
+      return;
+    }
+
+    try {
+      const response = await requestCoach(request);
+
+      if (response.status === "clarify") {
+        dispatch({
+          type: "REQUEST_CLARIFICATION",
+          question: response.clarification_question,
+        });
+        return;
+      }
+
+      dispatch({ type: "GENERATION_SUCCEEDED", result: response });
+    } catch {
+      dispatch({ type: "GENERATION_FAILED" });
+    }
   }
 
   return (

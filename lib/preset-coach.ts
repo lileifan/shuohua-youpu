@@ -32,9 +32,9 @@ function matchesSceneB(scenario: string): boolean {
   );
 }
 
-export function getPresetCoachResult(state: AppState): CompleteCoachResult {
-  const scenario = getScenario(state);
-
+export function getPresetCoachResultForScenario(
+  scenario: string,
+): CompleteCoachResult {
   if (matchesSceneA(scenario)) {
     return cloneResult(SCENE_A_RESULT);
   }
@@ -44,4 +44,8 @@ export function getPresetCoachResult(state: AppState): CompleteCoachResult {
   }
 
   return cloneResult(GENERIC_OFFLINE_RESULT);
+}
+
+export function getPresetCoachResult(state: AppState): CompleteCoachResult {
+  return getPresetCoachResultForScenario(getScenario(state));
 }
