@@ -44,7 +44,7 @@ textarea {
 
 .home-shell {
   min-height: 100vh;
-  padding: 36px 20px 64px;
+  padding: 24px 20px 40px;
 }
 
 .app-frame {
@@ -57,7 +57,7 @@ textarea {
 }
 
 .brand-header {
-  padding: 34px 24px 30px;
+  padding: 24px 24px 20px;
   text-align: center;
   background: var(--surface-deep);
 }
@@ -71,7 +71,7 @@ h1 {
 }
 
 .tagline {
-  margin: 18px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
   font-size: clamp(1rem, 2.5vw, 1.2rem);
 }
@@ -87,7 +87,7 @@ h1 {
 }
 
 .scene-progress li {
-  padding: 14px 10px;
+  padding: 10px;
   color: var(--muted);
   font-size: 0.9rem;
 }
@@ -113,7 +113,7 @@ h1 {
 
 .stage-panel {
   min-height: 480px;
-  padding: 42px 48px 50px;
+  padding: 30px 48px 36px;
   color: var(--ink);
   background: var(--paper);
 }
@@ -140,14 +140,14 @@ h1 {
 
 .setup-fieldset {
   min-width: 0;
-  margin: 30px 0 0;
+  margin: 20px 0 0;
   padding: 0;
   border: 0;
 }
 
 .setup-fieldset legend {
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   color: var(--ink);
   font-weight: 700;
 }
@@ -165,7 +165,7 @@ h1 {
   gap: 14px;
   align-items: center;
   width: 100%;
-  padding: 16px;
+  padding: 12px;
   color: var(--ink);
   text-align: left;
   background: var(--paper-soft);
@@ -196,8 +196,8 @@ h1 {
 
 .role-avatar {
   display: grid;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   place-items: center;
   color: var(--paper);
   background: var(--surface);
@@ -271,19 +271,19 @@ h1 {
 }
 
 .custom-personality {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .custom-personality label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--ink-muted);
   font-size: 0.84rem;
 }
 
 .custom-personality input {
   width: 100%;
-  padding: 11px 12px;
+  padding: 10px 12px;
   color: var(--ink);
   background: #fffaf0;
   border: 1px solid rgb(43 35 32 / 28%);
@@ -304,7 +304,7 @@ h1 {
 
 .primary-action {
   width: 100%;
-  margin-top: 34px;
+  margin-top: 20px;
   padding: 13px 18px;
   color: #fff8ed;
   background: var(--wine);
@@ -327,8 +327,8 @@ h1 {
 }
 
 .target-summary {
-  margin: 28px 0 0;
-  padding: 18px 20px;
+  margin: 18px 0 0;
+  padding: 12px 16px;
   color: var(--ink);
   background: var(--paper-soft);
   border-left: 4px solid var(--wine);
@@ -353,7 +353,7 @@ h1 {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-top: 16px;
+  margin-top: 10px;
   color: var(--ink-muted);
   font-size: 0.78rem;
 }
@@ -365,7 +365,7 @@ h1 {
 
 .scenario-form,
 .clarification-form {
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 .scenario-form label,
@@ -390,7 +390,8 @@ h1 {
 }
 
 .clarification-form textarea {
-  min-height: 100px;
+  height: 104px;
+  min-height: 104px;
 }
 
 .character-limit {
@@ -402,19 +403,19 @@ h1 {
 
 .scenario-form .primary-action,
 .clarification-form .primary-action {
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 .conversation-script {
-  margin-top: 28px;
-  padding: 24px 24px 8px;
+  margin-top: 18px;
+  padding: 18px 20px 4px;
   background: rgb(235 225 206 / 68%);
   border-top: 1px solid rgb(43 35 32 / 18%);
   border-bottom: 1px solid rgb(43 35 32 / 18%);
 }
 
 .script-heading {
-  margin: 0 0 20px;
+  margin: 0 0 14px;
   color: var(--wine);
   font-family: "Songti SC", SimSun, serif;
   font-size: 0.85rem;
@@ -430,7 +431,7 @@ h1 {
   display: grid;
   grid-template-columns: 58px 1fr;
   gap: 15px;
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   padding-left: 14px;
   border-left: 3px solid var(--wine);
 }
@@ -806,6 +807,67 @@ h1 {
   margin: 0;
   color: var(--ink-muted);
   text-align: center;
+}
+
+@media (min-width: 701px) and (max-width: 1199px) {
+  .strategy-grid {
+    grid-template-columns: 1fr;
+    width: min(760px, 100%);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .strategy-card-face {
+    min-height: 0;
+  }
+}
+
+@media (min-width: 701px) and (max-height: 800px) {
+  .home-shell {
+    padding: 12px 16px 24px;
+  }
+
+  .brand-header {
+    padding: 14px 20px 12px;
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
+
+  .tagline {
+    margin-top: 5px;
+    font-size: 0.95rem;
+  }
+
+  .scene-progress li {
+    padding: 8px 10px;
+  }
+
+  .stage-panel {
+    padding: 18px 40px 24px;
+  }
+
+  .setup-fieldset {
+    margin-top: 12px;
+  }
+
+  .role-option {
+    padding: 8px 12px;
+  }
+
+  .role-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .custom-personality {
+    margin-top: 8px;
+  }
+
+  .primary-action {
+    margin-top: 12px;
+  }
 }
 
 @media (max-width: 700px) {

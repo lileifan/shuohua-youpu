@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import type { Dispatch } from "react";
 
 import {
@@ -67,6 +67,10 @@ function renderStage(state: AppState, dispatch: Dispatch<WorkflowAction>) {
 export function AppShell() {
   const [state, dispatch] = useReducer(workflowReducer, INITIAL_APP_STATE);
   const progressItems = getSceneProgress(state.status);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [state.status]);
 
   return (
     <main className="home-shell">
