@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:coach-protocol": "tsc -p tsconfig.protocol-test.json && node node_modules/.cache/coach-protocol-test/scripts/verify-coach-protocol.js"
   },
   "dependencies": {
     "next": "16.3.4",

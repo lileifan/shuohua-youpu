@@ -18,3 +18,16 @@ export interface CompleteCoachResult {
   context_summary: string;
   options: StrategyOption[];
 }
+
+export interface ClarifyCoachContext {
+  real_concern: string | null;
+  flexibility: string | null;
+}
+
+export interface ClarifyCoachResult {
+  status: "clarify";
+  clarification_question: string;
+  context: ClarifyCoachContext;
+}
+
+export type CoachResponse = ClarifyCoachResult | CompleteCoachResult;
