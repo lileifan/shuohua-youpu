@@ -2,7 +2,7 @@
 
 - **Codename:** `shuohua-youpu`
 - **Mode:** refinement
-- **Last updated / current state:** 2026-09-03；核心流程与 AI 已实现；第一幕完成三向视觉实验，A「烧焦残页」的有机撕纸语言已推广到正式三幕。
+- **Last updated / current state:** 2026-09-04；核心流程与真实 AI 已实现；第一幕完成三向视觉实验，A「烧焦残页」的有机撕纸语言已推广到正式三幕；新增“同事”角色与主演示场景一键载入。
 - **Confidence verdict:** 7/10 — 演示概念强；若能证明用户愿意为“沟通预演”而非单次文案付费，可提升至 8/10。
 
 ## The concept
@@ -22,7 +22,7 @@
 ## Scope & roadmap
 
 - **Scope IN (competition v1):** 领导、甲方/客户；男女形象；4 类表情；最多 2 轮场景挖掘；三版话术；翻卡预演；现场演示兜底。
-- **Scope OUT / deferred:** 平级同事、下属、跨部门协作方放入 P2；话术微调、更多长尾场景、动画表情继续延后。
+- **Scope OUT / deferred:** 下属、跨部门协作方放入 P2；话术微调、更多长尾场景、动画表情继续延后。“同事”已作为首个 P2 角色加入。
 - **Locked decisions:**
   - LOCKED: 比赛版仅精修“领导”和“甲方/客户”两类角色 — 确保一人开发能把演示做完整。
   - LOCKED: 其他角色和扩展功能进入 P2 — 有余力再增加。
