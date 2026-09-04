@@ -139,7 +139,11 @@ export function AppShell() {
 
   return (
     <main className="home-shell">
-      <section className="app-frame" aria-labelledby="product-title">
+      <section
+        className="app-frame"
+        data-status={state.status}
+        aria-labelledby="product-title"
+      >
         <header className="brand-header">
           <h1 id="product-title">说话有谱</h1>
           <p className="tagline">让每句话出口前，心里都有谱。</p>

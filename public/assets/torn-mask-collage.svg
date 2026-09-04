@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650" preserveAspectRatio="none">
+  <defs>
+    <filter id="fiber" x="-4%" y="-5%" width="108%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.014 0.085" numOctaves="4" seed="43" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="B" yChannelSelector="R"/>
+    </filter>
+  </defs>
+  <path fill="white" filter="url(#fiber)" d="M42 61 C94 18 142 67 198 30 C246 72 301 12 353 53 C407 17 455 69 513 27 C562 70 616 14 667 52 C720 18 771 68 827 29 C878 72 931 15 982 50 C1035 24 1087 57 1152 34 L1176 112 C1137 151 1184 194 1145 235 C1187 278 1138 326 1171 371 C1130 409 1181 454 1142 496 L1170 584 C1109 560 1061 617 1002 577 C944 622 889 568 833 609 C777 565 720 619 664 575 C608 623 550 566 495 608 C439 563 383 619 326 575 C270 613 215 566 156 601 L39 574 L14 500 C52 458 7 416 46 373 C5 329 55 281 20 238 C61 196 12 151 51 112 Z"/>
+</svg>
