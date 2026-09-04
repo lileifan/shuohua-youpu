@@ -98,6 +98,26 @@ export function workflowReducer(
           }
         : state;
 
+    case "LOAD_DEMO_SCENARIO":
+      return state.status === "setup"
+        ? {
+            ...state,
+            target: {
+              role: action.role,
+              gender: action.gender,
+              personalityPreset: action.personality,
+              customPersonality: "",
+            },
+            conversation: {
+              scenario: action.scenario.slice(0, MAX_SCENARIO_LENGTH),
+              clarificationTurns: [],
+              pendingClarificationQuestion: null,
+            },
+            clarificationCount: 0,
+            result: null,
+          }
+        : state;
+
     case "COMPLETE_SETUP":
       return state.status === "setup" && isSetupComplete(state)
         ? { ...state, status: "describe" }

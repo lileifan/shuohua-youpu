@@ -8,7 +8,7 @@ export type AppStatus =
   | "results"
   | "fallback";
 
-export type RoleType = "leader" | "client";
+export type RoleType = "leader" | "client" | "peer";
 
 export type GenderPresentation = "male" | "female";
 
@@ -50,6 +50,13 @@ export type WorkflowAction =
   | { type: "SET_GENDER"; gender: GenderPresentation }
   | { type: "SET_PERSONALITY_PRESET"; preset: PersonalityPreset }
   | { type: "SET_CUSTOM_PERSONALITY"; value: string }
+  | {
+      type: "LOAD_DEMO_SCENARIO";
+      role: RoleType;
+      gender: GenderPresentation;
+      personality: PersonalityPreset;
+      scenario: string;
+    }
   | { type: "COMPLETE_SETUP" }
   | { type: "SET_SCENARIO"; value: string }
   | { type: "REQUEST_CLARIFICATION"; question: string }

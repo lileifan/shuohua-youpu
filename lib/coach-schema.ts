@@ -17,7 +17,7 @@ export const CoachRequestSchema = z
   .object({
     target: z
       .object({
-        role: z.enum(["leader", "client"]),
+        role: z.enum(["leader", "client", "peer"]),
         personality: NonEmptyTextSchema.max(20),
       })
       .strict(),

@@ -2683,3 +2683,59 @@ h1 {
   -webkit-mask: url("/assets/torn-card-indirect.svg") center / 100% 100% no-repeat;
   mask: url("/assets/torn-card-indirect.svg") center / 100% 100% no-repeat;
 }
+
+/* P2 peer role and presenter shortcuts. */
+.role-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.demo-loader {
+  width: min(560px, 100%);
+  margin: 16px auto 0;
+  text-align: center;
+}
+
+.demo-loader summary {
+  display: inline-block;
+  color: #7f352d;
+  cursor: pointer;
+  font-family: "Songti SC", STSong, SimSun, serif;
+  font-size: 0.86rem;
+}
+
+.demo-loader-options {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 9px;
+}
+
+.demo-loader-button {
+  padding: 7px 12px;
+  color: #6d3028;
+  background: rgb(255 247 221 / 42%);
+  border: 1px solid rgb(104 60 29 / 34%);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.demo-loader-button:hover,
+.demo-loader-button:focus-visible {
+  color: #f7dda7;
+  background: #7a2027;
+}
+
+.avatar-role-peer path:last-child {
+  stroke: #d0a15d;
+}
+
+@media (max-width: 700px) {
+  .role-options {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-loader-options {
+    flex-direction: column;
+  }
+}

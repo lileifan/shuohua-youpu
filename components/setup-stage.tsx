@@ -5,6 +5,7 @@ import {
   PERSONALITY_OPTIONS,
   ROLE_OPTIONS,
 } from "../data/target-options";
+import { SCENE_A_SCENARIO, SCENE_B_SCENARIO } from "../data/demo-results";
 import {
   getEffectivePersonality,
   isSetupComplete,
@@ -28,6 +29,42 @@ export function SetupStage({ state, dispatch }: SetupStageProps) {
     <section className="stage-content" aria-labelledby="setup-title">
       <p className="stage-kicker">第一幕·定角</p>
       <h2 id="setup-title">这场对话，你要面对谁？</h2>
+
+      <details className="demo-loader">
+        <summary>演示模式：一键载入主演示场景</summary>
+        <div className="demo-loader-options">
+          <button
+            className="demo-loader-button"
+            type="button"
+            onClick={() =>
+              dispatch({
+                type: "LOAD_DEMO_SCENARIO",
+                role: "leader",
+                gender: "male",
+                personality: "strong",
+                scenario: SCENE_A_SCENARIO,
+              })
+            }
+          >
+            场景 A · 周末加班
+          </button>
+          <button
+            className="demo-loader-button"
+            type="button"
+            onClick={() =>
+              dispatch({
+                type: "LOAD_DEMO_SCENARIO",
+                role: "client",
+                gender: "female",
+                personality: "suspicious",
+                scenario: SCENE_B_SCENARIO,
+              })
+            }
+          >
+            场景 B · 客户延期
+          </button>
+        </div>
+      </details>
 
       <fieldset className="setup-fieldset">
         <legend id="role-legend">对方是谁</legend>

@@ -8,6 +8,7 @@ import { buildCoachPrompt } from "../lib/coach-prompt";
 import {
   ClarifyCoachResultSchema,
   CoachResponseSchema,
+  CoachRequestSchema,
   CompleteCoachResultSchema,
   validateCoachResponseForState,
 } from "../lib/coach-schema";
@@ -105,6 +106,14 @@ const request: CoachRequestContext = {
   clarificationCount: 0,
   maxClarifications: MAX_COACH_CLARIFICATIONS,
 };
+assert.equal(
+  CoachRequestSchema.safeParse({
+    ...request,
+    target: { role: "peer", personality: "严谨" },
+  }).success,
+  true,
+  "peer 角色请求应通过 schema",
+);
 const prompt = buildCoachPrompt(request);
 const promptPayload = JSON.parse(prompt.contextPayload) as Record<
   string,
@@ -126,6 +135,14 @@ assert.equal(
   prompt.systemInstruction.includes("每轮只能问一个最关键的问题"),
   true,
   "System instruction 应限制每轮一个问题",
+);
+assert.equal(
+  buildCoachPrompt({
+    ...request,
+    target: { role: "peer", personality: "严谨" },
+  }).systemInstruction.includes("peer=平级同事"),
+  true,
+  "Prompt 应解释 peer 角色含义",
 );
 assert.equal(
   prompt.systemInstruction.includes(

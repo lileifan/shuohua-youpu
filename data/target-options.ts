@@ -7,6 +7,7 @@ import type {
 export const ROLE_LABELS: Record<RoleType, string> = {
   leader: "领导",
   client: "甲方/客户",
+  peer: "同事",
 };
 
 export const GENDER_LABELS: Record<GenderPresentation, string> = {
@@ -34,6 +35,12 @@ export const ROLE_OPTIONS = [
     label: ROLE_LABELS.client,
     description: "外部合作方",
     avatarLabel: "甲",
+  },
+  {
+    value: "peer",
+    label: ROLE_LABELS.peer,
+    description: "平级协作",
+    avatarLabel: "同",
   },
 ] as const satisfies readonly {
   value: RoleType;

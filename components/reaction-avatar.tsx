@@ -110,11 +110,18 @@ export function ReactionAvatar({
               <circle cx="80" cy="145" r="2.5" />
               <circle cx="80" cy="154" r="2.5" />
             </g>
-          ) : (
+          ) : role === "client" ? (
             <g className="avatar-role-detail avatar-role-client">
               <path d="m43 140 22-17 15 30-27-7Z" />
               <path d="m117 140-22-17-15 30 27-7Z" />
               <path d="m69 124 11 9 11-9-4 21H73Z" />
+            </g>
+          ) : (
+            <g className="avatar-role-detail avatar-role-peer">
+              <path d="m43 140 22-17 15 30-27-7Z" />
+              <path d="m117 140-22-17-15 30 27-7Z" />
+              <path d="M68 124h24l-4 25H72Z" />
+              <path d="m72 124 8 9 8-9" />
             </g>
           )}
           <path className="avatar-neck" d="M68 108h24v25H68z" />
