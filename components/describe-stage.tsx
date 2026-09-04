@@ -7,6 +7,7 @@ import {
   getScenario,
   hasValidScenario,
   MAX_SCENARIO_LENGTH,
+  SKIPPED_SCENARIO,
 } from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
 import type { CoachRequestContext } from "../types/coach-request";
@@ -31,18 +32,22 @@ export function DescribeStage({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (submitLock.current || !scenarioIsValid) {
+    if (submitLock.current) {
       return;
     }
 
     submitLock.current = true;
+    const scenario = getScenario(state) || SKIPPED_SCENARIO;
     const request = createCoachRequestContext({
       role: state.target.role,
       personality: getEffectivePersonality(state),
-      scenario: getScenario(state),
+      scenario,
       clarificationTurns: state.conversation.clarificationTurns,
       clarificationCount: state.conversation.clarificationTurns.length,
     });
+    if (!scenarioIsValid) {
+      dispatch({ type: "SET_SCENARIO", value: SKIPPED_SCENARIO });
+    }
     dispatch({ type: "START_GENERATING" });
 
     if (!request) {
@@ -65,7 +70,7 @@ export function DescribeStage({
       <DevOfflineBadge />
 
       <form className="scenario-form" onSubmit={handleSubmit}>
-        <label htmlFor="scenario">你的沟通困境</label>
+        <label htmlFor="scenario">你的沟通困境（可选）</label>
         <textarea
           id="scenario"
           value={state.conversation.scenario}
@@ -82,9 +87,9 @@ export function DescribeStage({
         <button
           className="primary-action"
           type="submit"
-          disabled={!scenarioIsValid}
+          disabled={submitLock.current}
         >
-          开始排演
+          {scenarioIsValid ? "开始排演" : "跳过情境，直接排演"}
         </button>
       </form>
     </section>
