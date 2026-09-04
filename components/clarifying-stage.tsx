@@ -6,6 +6,7 @@ import {
   getEffectivePersonality,
   getScenario,
   MAX_SCENARIO_LENGTH,
+  SKIPPED_CLARIFICATION_ANSWER,
 } from "../lib/workflow";
 import type { AppState, WorkflowAction } from "../types/workflow";
 import type { CoachRequestContext } from "../types/coach-request";
@@ -66,6 +67,34 @@ export function ClarifyingStage({
     submitCoachRequest(request);
   }
 
+  function handleSkip() {
+    if (submitLock.current || !currentQuestion) {
+      return;
+    }
+
+    submitLock.current = true;
+    const nextTurns = [
+      ...state.conversation.clarificationTurns,
+      { question: currentQuestion, answer: SKIPPED_CLARIFICATION_ANSWER },
+    ];
+    const request = createCoachRequestContext({
+      role: state.target.role,
+      personality: getEffectivePersonality(state),
+      scenario: getScenario(state),
+      clarificationTurns: nextTurns,
+      clarificationCount: nextTurns.length,
+    });
+
+    dispatch({ type: "SKIP_CLARIFICATION" });
+
+    if (!request) {
+      dispatch({ type: "GENERATION_FAILED" });
+      return;
+    }
+
+    submitCoachRequest(request);
+  }
+
   return (
     <section className="stage-content" aria-labelledby="clarifying-title">
       <p className="stage-kicker">第二幕·起因</p>
@@ -103,6 +132,14 @@ export function ClarifyingStage({
           disabled={!answerIsValid}
         >
           继续排演
+        </button>
+        <button
+          className="secondary-action clarification-skip"
+          type="button"
+          onClick={handleSkip}
+          disabled={submitLock.current}
+        >
+          跳过这个问题
         </button>
       </form>
     </section>

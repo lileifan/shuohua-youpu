@@ -15,6 +15,7 @@ import type {
 export const MAX_CLARIFICATION_COUNT = 2;
 export const MAX_CUSTOM_PERSONALITY_LENGTH = 20;
 export const MAX_SCENARIO_LENGTH = 500;
+export const SKIPPED_CLARIFICATION_ANSWER = "（用户跳过此问题）";
 
 export const INITIAL_APP_STATE: Readonly<AppState> = {
   status: "setup",
@@ -193,6 +194,32 @@ export function workflowReducer(
           },
         };
       }
+
+      return {
+        ...state,
+        status: "generating",
+        clarificationCount: clarificationTurns.length,
+        result: null,
+        conversation: {
+          ...state.conversation,
+          clarificationTurns,
+          pendingClarificationQuestion: null,
+        },
+      };
+    }
+
+    case "SKIP_CLARIFICATION": {
+      const question =
+        state.conversation.pendingClarificationQuestion?.trim() ?? "";
+
+      if (state.status !== "clarifying" || !question) {
+        return state;
+      }
+
+      const clarificationTurns = [
+        ...state.conversation.clarificationTurns,
+        { question, answer: SKIPPED_CLARIFICATION_ANSWER },
+      ].slice(0, MAX_CLARIFICATION_COUNT);
 
       return {
         ...state,

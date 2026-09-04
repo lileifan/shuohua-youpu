@@ -65,6 +65,7 @@ export type WorkflowAction =
       answer: string;
       nextQuestion: string | null;
     }
+  | { type: "SKIP_CLARIFICATION" }
   | { type: "START_GENERATING" }
   | { type: "GENERATION_SUCCEEDED"; result: CompleteCoachResult }
   | { type: "GENERATION_FAILED" }

@@ -36,6 +36,7 @@ import {
 import type { AppState } from "../types/workflow";
 import {
   INITIAL_APP_STATE,
+  SKIPPED_CLARIFICATION_ANSWER,
   workflowReducer,
 } from "../lib/workflow";
 
@@ -454,6 +455,32 @@ const fallbackState: AppState = {
   },
   result: null,
 };
+const clarifyingState: AppState = {
+  ...INITIAL_APP_STATE,
+  status: "clarifying",
+  target: {
+    role: "leader",
+    gender: "male",
+    personalityPreset: "strong",
+    customPersonality: "",
+  },
+  conversation: {
+    scenario: SCENE_A_SCENARIO,
+    clarificationTurns: [],
+    pendingClarificationQuestion: MOCK_SCENE_A_QUESTION,
+  },
+  clarificationCount: 1,
+  result: null,
+};
+const skippedState = workflowReducer(clarifyingState, {
+  type: "SKIP_CLARIFICATION",
+});
+assert.equal(skippedState.status, "generating", "追问应允许跳过并继续生成");
+assert.equal(
+  skippedState.conversation.clarificationTurns[0]?.answer,
+  SKIPPED_CLARIFICATION_ANSWER,
+  "跳过的问题应以明确标记保留上下文",
+);
 const retriedState = workflowReducer(fallbackState, {
   type: "RETRY_GENERATION",
 });

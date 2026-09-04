@@ -2514,6 +2514,12 @@ h1 {
   background: #71222a;
 }
 
+.clarification-skip {
+  display: block;
+  margin: 12px auto 0;
+  padding: 4px 0;
+}
+
 @media (min-width: 701px) and (max-height: 800px) {
   .home-shell {
     padding-top: 8px;
