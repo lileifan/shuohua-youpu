@@ -2520,6 +2520,35 @@ h1 {
   padding: 4px 0;
 }
 
+.scenario-actions {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.scenario-actions .primary-action {
+  margin-top: 0;
+}
+
+.scenario-skip {
+  min-width: 170px;
+  padding: 10px 12px;
+}
+
+@media (max-width: 700px) {
+  .scenario-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .scenario-actions .primary-action,
+  .scenario-skip {
+    width: min(330px, 100%);
+  }
+}
+
 @media (min-width: 701px) and (max-height: 800px) {
   .home-shell {
     padding-top: 8px;
