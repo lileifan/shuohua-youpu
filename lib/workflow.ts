@@ -16,7 +16,6 @@ export const MAX_CLARIFICATION_COUNT = 2;
 export const MAX_CUSTOM_PERSONALITY_LENGTH = 20;
 export const MAX_SCENARIO_LENGTH = 500;
 export const SKIPPED_CLARIFICATION_ANSWER = "（用户跳过此问题）";
-export const SKIPPED_SCENARIO = "（用户暂未补充具体沟通情境）";
 
 export const INITIAL_APP_STATE: Readonly<AppState> = {
   status: "setup",
