@@ -292,7 +292,7 @@ export function getEffectivePersonality(state: AppState): string | null {
 
   return state.target.personalityPreset
     ? PERSONALITY_LABELS[state.target.personalityPreset]
-    : null;
+    : "未设定";
 }
 
 export function isSetupComplete(state: AppState): boolean {

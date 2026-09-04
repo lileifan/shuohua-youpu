@@ -168,7 +168,7 @@ export function SetupStage({ state, dispatch }: SetupStageProps) {
 
         <div className="custom-personality">
           <label htmlFor="custom-personality">
-            或者自己描述一下，例如：急性子、嘴硬心软
+            或者自己描述一下（可选），例如：急性子、嘴硬心软
           </label>
           <input
             id="custom-personality"
@@ -191,9 +191,9 @@ export function SetupStage({ state, dispatch }: SetupStageProps) {
           >
             {customPersonalityIsActive && effectivePersonality
               ? `当前使用：自定义描述「${effectivePersonality}」`
-              : effectivePersonality
+              : state.target.personalityPreset && effectivePersonality
                 ? `当前使用：${effectivePersonality}`
-                : "请选择预设性格，或填写自定义描述。"}
+                : "性格描述可留空，之后也可以直接调整。"}
           </p>
         </div>
       </fieldset>
