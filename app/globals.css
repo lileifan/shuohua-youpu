@@ -2658,6 +2658,15 @@ h1 {
   mask: url("/assets/torn-mask-fragment.svg") center / 100% 100% no-repeat;
 }
 
+/* The results page is taller and its lower tear reaches farther into the sheet. */
+.app-frame[data-status="results"] .stage-panel {
+  padding-bottom: 132px;
+}
+
+.app-frame[data-status="results"] .results-actions {
+  margin-bottom: 34px;
+}
+
 .strategy-card-face {
   clip-path: none;
   padding-bottom: 42px;
